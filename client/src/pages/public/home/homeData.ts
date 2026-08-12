@@ -1,157 +1,173 @@
-import type { Service } from '@/services/business.api'
-import { Calendar, Clock, Shield, Users } from 'lucide-react'
+import type { Service } from "@/services/business.api";
+import { Calendar, Clock, Shield, Users } from "lucide-react";
 
 export const HERO_IMAGES = [
-  'https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?auto=format&fit=crop&w=1600&q=85',
-  'https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?auto=format&fit=crop&w=1600&q=85',
-  'https://images.unsplash.com/photo-1631217868264-e5b90bb7e133?auto=format&fit=crop&w=1600&q=85',
-  'https://images.unsplash.com/photo-1579684385127-1ef15d508118?auto=format&fit=crop&w=1600&q=85',
-]
+  "https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?auto=format&fit=crop&w=1600&q=85",
+  "https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?auto=format&fit=crop&w=1600&q=85",
+  "https://images.unsplash.com/photo-1631217868264-e5b90bb7e133?auto=format&fit=crop&w=1600&q=85",
+  "https://images.unsplash.com/photo-1579684385127-1ef15d508118?auto=format&fit=crop&w=1600&q=85",
+];
 
 /** Reliable clinic service images */
 export const SERVICE_IMAGE_BY_KEY: Record<string, string> = {
   general:
-    'https://images.unsplash.com/photo-1666214280557-f1b5022eb634?auto=format&fit=crop&w=800&q=80',
+    "https://images.unsplash.com/photo-1666214280557-f1b5022eb634?auto=format&fit=crop&w=800&q=80",
   followup:
-    'https://images.unsplash.com/photo-1576091160550-2173dba07efd?auto=format&fit=crop&w=800&q=80',
+    "https://images.unsplash.com/photo-1631217868264-e5b90bb7e133?auto=format&fit=crop&w=800&q=80",
   derma:
-    'https://images.unsplash.com/photo-1559839734-2b71ea197ec2?auto=format&fit=crop&w=800&q=80',
-  lab: 'https://images.unsplash.com/photo-1579154204601-01588f351e67?auto=format&fit=crop&w=800&q=80',
+    "https://images.unsplash.com/photo-1559839734-2b71ea197ec2?auto=format&fit=crop&w=800&q=80",
+  lab: "https://images.unsplash.com/photo-1579154204601-01588f351e67?auto=format&fit=crop&w=800&q=80",
   pediatrics:
-    'https://images.unsplash.com/photo-1631217868264-e5b90bb7e133?auto=format&fit=crop&w=800&q=80',
+    "https://images.unsplash.com/photo-1631217868264-e5b90bb7e133?auto=format&fit=crop&w=800&q=80",
   cardio:
-    'https://images.unsplash.com/photo-1579684385127-1ef15d508118?auto=format&fit=crop&w=800&q=80',
+    "https://images.unsplash.com/photo-1579684385127-1ef15d508118?auto=format&fit=crop&w=800&q=80",
   ultrasound:
-    'https://images.unsplash.com/photo-1516549655169-df83a0774514?auto=format&fit=crop&w=800&q=80',
+    "https://images.unsplash.com/photo-1516549655169-df83a0774514?auto=format&fit=crop&w=800&q=80",
   default:
-    'https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?auto=format&fit=crop&w=800&q=80',
-}
+    "https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?auto=format&fit=crop&w=800&q=80",
+};
 
 export const AVATARS = [
-  'https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?auto=format&fit=crop&w=400&q=80',
-  'https://images.unsplash.com/photo-1559839734-2b71ea197ec2?auto=format&fit=crop&w=400&q=80',
-  'https://images.unsplash.com/photo-1594824476967-48c8b964273f?auto=format&fit=crop&w=400&q=80',
-  'https://images.unsplash.com/photo-1622253692010-333f2da6031d?auto=format&fit=crop&w=400&q=80',
-  'https://images.unsplash.com/photo-1651008376811-b90baee60c1f?auto=format&fit=crop&w=400&q=80',
-]
+  "https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?auto=format&fit=crop&w=400&q=80",
+  "https://images.unsplash.com/photo-1559839734-2b71ea197ec2?auto=format&fit=crop&w=400&q=80",
+  "https://images.unsplash.com/photo-1594824476967-48c8b964273f?auto=format&fit=crop&w=400&q=80",
+  "https://images.unsplash.com/photo-1622253692010-333f2da6031d?auto=format&fit=crop&w=400&q=80",
+  "https://images.unsplash.com/photo-1651008376811-b90baee60c1f?auto=format&fit=crop&w=400&q=80",
+];
 
 export const FEATURES = [
   {
     icon: Calendar,
-    title: 'Easy booking',
-    titleAr: 'حجز سهل',
-    desc: 'Book in a few taps.',
-    descAr: 'احجز في خطوات بسيطة.',
+    title: "Easy booking",
+    titleAr: "حجز سهل",
+    desc: "Book in a few taps.",
+    descAr: "احجز في خطوات بسيطة.",
   },
   {
     icon: Clock,
-    title: 'Real-time slots',
-    titleAr: 'مواعيد لحظية',
-    desc: 'Only open times shown.',
-    descAr: 'المواعيد المتاحة فقط.',
+    title: "Real-time slots",
+    titleAr: "مواعيد لحظية",
+    desc: "Only open times shown.",
+    descAr: "المواعيد المتاحة فقط.",
   },
   {
     icon: Shield,
-    title: 'Trusted care',
-    titleAr: 'رعاية موثوقة',
-    desc: 'Your data is protected.',
-    descAr: 'بياناتك محمية.',
+    title: "Trusted care",
+    titleAr: "رعاية موثوقة",
+    desc: "Your data is protected.",
+    descAr: "بياناتك محمية.",
   },
   {
     icon: Users,
-    title: 'Expert doctors',
-    titleAr: 'أطباء متخصصون',
-    desc: 'Choose your doctor.',
-    descAr: 'اختار طبيبك.',
+    title: "Expert doctors",
+    titleAr: "أطباء متخصصون",
+    desc: "Choose your doctor.",
+    descAr: "اختار طبيبك.",
   },
-]
+];
 
 export const FALLBACK_SERVICES: Partial<Service>[] = [
   {
-    _id: '1',
-    name: 'General Consultation',
-    nameAr: 'كشف عام',
+    _id: "1",
+    name: "General Consultation",
+    nameAr: "كشف عام",
     price: 300,
     duration: 30,
-    description: 'Full GP consultation.',
+    description: "Full GP consultation.",
+    descriptionAr: "استشارة طبية شاملة وفحص عام مع طبيب الأسرة.",
     image: SERVICE_IMAGE_BY_KEY.general,
   },
   {
-    _id: '2',
-    name: 'Follow-up Visit',
-    nameAr: 'زيارة متابعة',
+    _id: "2",
+    name: "Follow-up Visit",
+    nameAr: "زيارة متابعة",
     price: 150,
     duration: 15,
-    description: 'Follow-up appointment.',
+    description: "Follow-up appointment.",
+    descriptionAr:
+      "مراجعة الطبيب لمتابعة الخطة العلاجية ومناقشة نتائج التحاليل.",
     image: SERVICE_IMAGE_BY_KEY.followup,
   },
   {
-    _id: '3',
-    name: 'Dermatology Consultation',
-    nameAr: 'كشف جلدية',
+    _id: "3",
+    name: "Dermatology Consultation",
+    nameAr: "كشف جلدية",
     price: 450,
     duration: 30,
-    description: 'Skin specialist visit.',
+    description: "Skin specialist visit.",
+    descriptionAr: "فحص متخصص لتشخيص وعلاج أمراض الجلد والشعر والأظافر.",
     image: SERVICE_IMAGE_BY_KEY.derma,
   },
   {
-    _id: '4',
-    name: 'Lab Tests Package',
-    nameAr: 'باقة تحاليل',
+    _id: "4",
+    name: "Lab Tests Package",
+    nameAr: "باقة تحاليل",
     price: 600,
     duration: 20,
-    description: 'Basic lab diagnostics.',
+    description: "Basic lab diagnostics.",
+    descriptionAr:
+      "مجموعة شاملة من تحاليل الدم الأساسية للاطمئنان على الصحة العامة.",
     image: SERVICE_IMAGE_BY_KEY.lab,
   },
   {
-    _id: '5',
-    name: 'Pediatrics Consultation',
-    nameAr: 'كشف أطفال',
+    _id: "5",
+    name: "Pediatrics Consultation",
+    nameAr: "كشف أطفال",
     price: 350,
     duration: 30,
-    description: 'Child health check.',
+    description: "Child health check.",
+    descriptionAr:
+      "متابعة نمو الطفل وصحته وتقديم الرعاية الطبية اللازمة للأطفال.",
     image: SERVICE_IMAGE_BY_KEY.pediatrics,
   },
   {
-    _id: '6',
-    name: 'Cardiology Consultation',
-    nameAr: 'كشف قلب',
+    _id: "6",
+    name: "Cardiology Consultation",
+    nameAr: "كشف قلب",
     price: 500,
     duration: 40,
-    description: 'Heart check-up.',
+    description: "Heart check-up.",
+    descriptionAr: "فحص شامل لصحة القلب والأوعية الدموية مع طبيب متخصص.",
     image: SERVICE_IMAGE_BY_KEY.cardio,
   },
   {
-    _id: '7',
-    name: 'Ultrasound Scan',
-    nameAr: 'أشعة تلفزيونية',
+    _id: "7",
+    name: "Ultrasound Scan",
+    nameAr: "أشعة تلفزيونية",
     price: 700,
     duration: 25,
-    description: 'Diagnostic ultrasound.',
+    description: "Diagnostic ultrasound.",
+    descriptionAr:
+      "تصوير بالأشعة التلفزيونية (السونار) لتشخيص الحالات الطبية المختلفة.",
     image: SERVICE_IMAGE_BY_KEY.ultrasound,
   },
-]
+];
 
 /** Pick a stable image for a service (fixes broken follow-up etc.) */
-export function resolveServiceImage(name = '', image?: string) {
-  const n = name.toLowerCase()
-  if (n.includes('follow') || n.includes('متابع')) return SERVICE_IMAGE_BY_KEY.followup
-  if (n.includes('general') || n.includes('كشف عام')) return SERVICE_IMAGE_BY_KEY.general
-  if (n.includes('derma') || n.includes('جلد')) return SERVICE_IMAGE_BY_KEY.derma
-  if (n.includes('lab') || n.includes('تحليل')) return SERVICE_IMAGE_BY_KEY.lab
-  if (n.includes('pediatr') || n.includes('أطفال')) return SERVICE_IMAGE_BY_KEY.pediatrics
-  if (n.includes('cardio') || n.includes('قلب')) return SERVICE_IMAGE_BY_KEY.cardio
-  if (n.includes('ultra') || n.includes('أشعة') || n.includes('اشعة'))
-    return SERVICE_IMAGE_BY_KEY.ultrasound
+export function resolveServiceImage(name = "", image?: string) {
+  const n = name.toLowerCase();
+  if (n.includes("follow") || n.includes("متابع"))
+    return SERVICE_IMAGE_BY_KEY.followup;
+  if (n.includes("general") || n.includes("كشف عام"))
+    return SERVICE_IMAGE_BY_KEY.general;
+  if (n.includes("derma") || n.includes("جلد"))
+    return SERVICE_IMAGE_BY_KEY.derma;
+  if (n.includes("lab") || n.includes("تحليل")) return SERVICE_IMAGE_BY_KEY.lab;
+  if (n.includes("pediatr") || n.includes("أطفال"))
+    return SERVICE_IMAGE_BY_KEY.pediatrics;
+  if (n.includes("cardio") || n.includes("قلب"))
+    return SERVICE_IMAGE_BY_KEY.cardio;
+  if (n.includes("ultra") || n.includes("أشعة") || n.includes("اشعة"))
+    return SERVICE_IMAGE_BY_KEY.ultrasound;
 
   // Reject known-broken Unsplash IDs
   if (
     image &&
-    !image.includes('photo-1628348068343') &&
-    !image.includes('photo-1581595220892') &&
-    !image.includes('photo-1631217868264-e5b90bb7e133?w=800')
+    !image.includes("photo-1628348068343") &&
+    !image.includes("photo-1581595220892") &&
+    !image.includes("photo-1631217868264-e5b90bb7e133?w=800")
   ) {
-    return image
+    return image;
   }
-  return SERVICE_IMAGE_BY_KEY.default
+  return SERVICE_IMAGE_BY_KEY.default;
 }
