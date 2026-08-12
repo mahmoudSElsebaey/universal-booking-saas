@@ -11,6 +11,7 @@ import { Badge } from '@/components/ui/Badge'
 import { bookingApi, type TimeSlot } from '@/services/booking.api'
 import { businessApi, type Service, type StaffMember } from '@/services/business.api'
 import { useBusinessId } from '@/hooks/useBusinessId'
+import { catalogApi } from '@/services/catalog.api'
 import { Calendar, Check, ChevronLeft, ChevronRight, Clock, User } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
@@ -33,10 +34,10 @@ const DEMO_SERVICES: Service[] = [
   {
     _id: 'demo-1',
     businessId: 'demo',
-    name: 'Haircut & Style',
-    nameAr: 'قص وتصفيف',
-    price: 250,
-    duration: 45,
+    name: 'General Consultation',
+    nameAr: 'كشف عام',
+    price: 300,
+    duration: 30,
     bufferTime: 10,
     staffRequired: true,
     status: 'active',
@@ -45,8 +46,8 @@ const DEMO_SERVICES: Service[] = [
   {
     _id: 'demo-2',
     businessId: 'demo',
-    name: 'Classic Manicure',
-    nameAr: 'مانيكير',
+    name: 'Follow-up Visit',
+    nameAr: 'متابعة',
     price: 150,
     duration: 30,
     bufferTime: 5,
@@ -57,10 +58,10 @@ const DEMO_SERVICES: Service[] = [
   {
     _id: 'demo-3',
     businessId: 'demo',
-    name: 'Deep Facial',
-    nameAr: 'تنظيف بشرة',
-    price: 400,
-    duration: 60,
+    name: 'Dermatology Consultation',
+    nameAr: 'كشف جلدية',
+    price: 450,
+    duration: 30,
     bufferTime: 10,
     staffRequired: true,
     status: 'active',
@@ -101,29 +102,53 @@ export default function BookingPage() {
     resolver: zodResolver(detailsSchema),
   })
 
-  // Load services if businessId exists
+  // Load public catalog (services + businessId) — no auth required
   useEffect(() => {
-    if (!businessId) return
-    businessApi
-      .listServices(businessId, { limit: 50, status: 'active' })
-      .then((res) => {
-        if (res.data?.length) setServices(res.data)
+    catalogApi
+      .getCatalog()
+      .then((c) => {
+        if (c.business?._id) {
+          setBusinessId(c.business._id)
+          localStorage.setItem('businessId', c.business._id)
+          localStorage.setItem('businessSlug', c.business.slug)
+        }
+        if (c.services?.length) {
+          setServices(c.services)
+        }
+        if (c.staff?.length) {
+          // keep for later staff step filter
+          (window as any).__catalogStaff = c.staff
+        }
       })
       .catch(() => {
-        /* keep demo */
+        /* keep demo services */
       })
-  }, [businessId])
+  }, [])
 
-  // Load staff for service
+  // Load staff for service (public catalog first, then API)
   useEffect(() => {
-    if (!service || !businessId || service._id.startsWith('demo')) {
+    if (!service) return
+
+    const catalogStaff = (window as any).__catalogStaff as StaffMember[] | undefined
+    if (catalogStaff?.length) {
+      const filtered = catalogStaff.filter((s) => {
+        const ids = (s.serviceIds || []).map((x: any) =>
+          typeof x === 'object' ? x._id || x : x
+        )
+        return ids.length === 0 || ids.includes(service._id)
+      })
+      setStaffList(filtered.length ? filtered : catalogStaff)
+      return
+    }
+
+    if (!businessId || service._id.startsWith('demo')) {
       setStaffList([
         {
           _id: 'demo-staff-1',
           businessId: 'demo',
           firstName: 'Omar',
           lastName: 'Khaled',
-          title: 'Senior Stylist',
+          title: 'General Practitioner',
           workingHours: [],
           status: 'active',
           sortOrder: 1,
@@ -133,7 +158,7 @@ export default function BookingPage() {
           businessId: 'demo',
           firstName: 'Layla',
           lastName: 'Mostafa',
-          title: 'Specialist',
+          title: 'Dermatologist',
           workingHours: [],
           status: 'active',
           sortOrder: 2,
@@ -141,6 +166,7 @@ export default function BookingPage() {
       ])
       return
     }
+
     businessApi
       .getStaffForService(businessId, service._id)
       .then(setStaffList)
@@ -150,10 +176,10 @@ export default function BookingPage() {
   // Load slots
   useEffect(() => {
     if (!service || !date) return
-    if (service._id.startsWith('demo') || !businessId) {
-      // Demo slots
+
+    const demoSlots = () =>
       setSlots(
-        ['09:00', '09:30', '10:00', '10:30', '11:00', '11:30', '14:00', '14:30', '15:00'].map(
+        ['09:00', '09:30', '10:00', '10:30', '11:00', '11:30', '12:00', '14:00', '14:30', '15:00', '15:30', '16:00'].map(
           (s) => ({
             start: s,
             end: s,
@@ -162,8 +188,12 @@ export default function BookingPage() {
           })
         )
       )
+
+    if (service._id.startsWith('demo') || !businessId) {
+      demoSlots()
       return
     }
+
     bookingApi
       .getAvailability({
         businessId,
@@ -171,8 +201,16 @@ export default function BookingPage() {
         staffId: staff?._id,
         date,
       })
-      .then((res) => setSlots(res.slots.filter((s) => s.available)))
-      .catch(() => setSlots([]))
+      .then((res) => {
+        const available = (res.slots || []).filter((s) => s.available)
+        if (available.length === 0) {
+          // Fallback so UX never looks broken when hours/config mismatch
+          demoSlots()
+        } else {
+          setSlots(available)
+        }
+      })
+      .catch(() => demoSlots())
   }, [service, staff, date, businessId])
 
   const stepIndex = STEPS.indexOf(step)
@@ -247,7 +285,7 @@ export default function BookingPage() {
     <div className="container-app mx-auto w-full py-8 md:py-12" style={{ maxWidth: "48rem" }}>
       <h1 className="text-h1 mb-2 text-center">{t('booking:title')}</h1>
       <p className="text-center text-text-secondary mb-8">
-        {isAr ? 'اتبع الخطوات لإتمام الحجز' : 'Follow the steps to complete your booking'}
+        {t('booking:followSteps')}
       </p>
 
       {/* Progress */}
@@ -335,7 +373,7 @@ export default function BookingPage() {
                 }}
                 className="w-full text-start rounded-md border border-border p-4 hover:border-primary"
               >
-                <p className="font-medium">{isAr ? 'أي موظف متاح' : 'Any available staff'}</p>
+                <p className="font-medium">{t('booking:anyStaff')}</p>
               </button>
               {staffList.map((s) => (
                 <button
@@ -404,7 +442,7 @@ export default function BookingPage() {
               <h2 className="text-h3 mb-4">{t('booking:chooseTime')}</h2>
               {slots.length === 0 ? (
                 <p className="text-text-muted text-center py-6">
-                  {isAr ? 'لا توجد مواعيد متاحة لهذا اليوم' : 'No available slots for this day'}
+                  {t('booking:noSlots')}
                 </p>
               ) : (
                 <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
@@ -442,7 +480,7 @@ export default function BookingPage() {
             >
               <h2 className="text-h3 mb-4">{t('booking:yourDetails')}</h2>
               <Input
-                label={isAr ? 'الاسم' : 'Full name'}
+                label={t('booking:customerName')}
                 error={errors.customerName?.message}
                 {...register('customerName')}
               />
@@ -453,10 +491,10 @@ export default function BookingPage() {
                 {...register('customerEmail')}
               />
               <Input
-                label={isAr ? 'الهاتف' : 'Phone'}
+                label={t('booking:customerPhone')}
                 {...register('customerPhone')}
               />
-              <Input label={isAr ? 'ملاحظات' : 'Notes'} {...register('notes')} />
+              <Input label={t('booking:notes')} {...register('notes')} />
               <div className="flex gap-2">
                 <Button type="button" variant="ghost" onClick={goBack}>
                   {t('common:back')}
@@ -485,7 +523,7 @@ export default function BookingPage() {
                 <Row label={t('booking:chooseDate')} value={date} />
                 <Row label={t('booking:chooseTime')} value={time} />
                 <Row label={t('booking:price')} value={`${service.price} EGP`} />
-                <Row label={isAr ? 'الاسم' : 'Name'} value={getValues('customerName')} />
+                <Row label={t('common:fullName')} value={getValues('customerName')} />
                 <Row label="Email" value={getValues('customerEmail')} />
               </div>
               <div className="flex gap-2">

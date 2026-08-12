@@ -91,13 +91,13 @@ export default function RegisterPage() {
 
               <div className="grid grid-cols-2 gap-3">
                 <Input
-                  label="First name"
+                  label={t('auth:firstName')}
                   leftIcon={<User className="h-4 w-4" />}
                   error={errors.firstName?.message}
                   {...register('firstName')}
                 />
                 <Input
-                  label="Last name"
+                  label={t('auth:lastName')}
                   error={errors.lastName?.message}
                   {...register('lastName')}
                 />

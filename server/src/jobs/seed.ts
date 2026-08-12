@@ -1,8 +1,8 @@
 /**
- * Seed script — realistic demo data for development.
+ * Seed script — Clinic demo data
  * Run: npm run seed (from server folder)
  *
- * Demo accounts (password for all: Password123):
+ * Demo accounts (password: Password123):
  * - owner@bookora.app   → business_owner
  * - manager@bookora.app → manager
  * - staff@bookora.app   → staff
@@ -30,7 +30,6 @@ async function seed() {
   await mongoose.connect(MONGODB_URI)
   console.log('✅ Connected')
 
-  // Clean existing demo data (optional — comment out to keep data)
   console.log('🧹 Clearing collections...')
   await Promise.all([
     User.deleteMany({}),
@@ -42,7 +41,6 @@ async function seed() {
     Review.deleteMany({}),
   ])
 
-  // ── Users ──────────────────────────────────────────────
   console.log('👤 Creating users...')
   const owner = await User.create({
     email: 'owner@bookora.app',
@@ -84,115 +82,174 @@ async function seed() {
     isEmailVerified: true,
   })
 
-  // ── Business ───────────────────────────────────────────
-  console.log('🏢 Creating business...')
+  console.log('🏥 Creating clinic business...')
   const business = await Business.create({
-    name: 'Luxe Beauty Salon',
-    slug: 'luxe-beauty',
-    type: 'beauty_salon',
+    name: 'Cairo Care Clinic',
+    slug: 'cairo-care',
+    type: 'clinic',
     description:
-      'Premium beauty salon offering hair, nails, and skincare services in Cairo.',
-    phone: '+20212345678',
-    email: 'hello@luxebeauty.eg',
-    address: '12 Nile Street, Zamalek',
+      'Multi-specialty medical clinic offering general practice, dermatology, and diagnostics in Cairo.',
+    phone: '+20227350000',
+    email: 'hello@cairocare.eg',
+    address: '15 Medical Center St, Nasr City',
     city: 'Cairo',
     country: 'Egypt',
     ownerId: owner._id,
+    logo: 'https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?w=200&q=80',
     settings: {
       currency: 'EGP',
       timezone: 'Africa/Cairo',
       defaultLanguage: 'en',
       slotIntervalMinutes: 30,
-      minAdvanceHours: 2,
-      maxAdvanceDays: 45,
+      minAdvanceHours: 1,
+      maxAdvanceDays: 60,
       cancellationPolicyHours: 24,
       requireStaffSelection: true,
       allowOnlineBooking: true,
     },
+    workingHours: [
+      { day: 'sunday', isOpen: true, openTime: '10:00', closeTime: '16:00' },
+      { day: 'monday', isOpen: true, openTime: '09:00', closeTime: '18:00' },
+      { day: 'tuesday', isOpen: true, openTime: '09:00', closeTime: '18:00' },
+      { day: 'wednesday', isOpen: true, openTime: '09:00', closeTime: '18:00' },
+      { day: 'thursday', isOpen: true, openTime: '09:00', closeTime: '18:00' },
+      { day: 'friday', isOpen: true, openTime: '09:00', closeTime: '18:00' },
+      { day: 'saturday', isOpen: true, openTime: '10:00', closeTime: '16:00' },
+    ],
   })
 
   await User.findByIdAndUpdate(owner._id, { businessId: business._id })
   await User.findByIdAndUpdate(manager._id, { businessId: business._id })
   await User.findByIdAndUpdate(staffUser._id, { businessId: business._id })
 
-  // ── Categories ─────────────────────────────────────────
   console.log('📁 Creating categories...')
-  const catHair = await Category.create({
+  const catGp = await Category.create({
     businessId: business._id,
-    name: 'Hair',
-    nameAr: 'شعر',
+    name: 'General Practice',
+    nameAr: 'طب عام',
     sortOrder: 1,
   })
-  const catNails = await Category.create({
+  const catDerma = await Category.create({
     businessId: business._id,
-    name: 'Nails',
-    nameAr: 'أظافر',
+    name: 'Dermatology',
+    nameAr: 'جلدية',
     sortOrder: 2,
   })
-  const catSkin = await Category.create({
+  const catDiag = await Category.create({
     businessId: business._id,
-    name: 'Skincare',
-    nameAr: 'عناية بالبشرة',
+    name: 'Diagnostics',
+    nameAr: 'تحاليل وتشخيص',
     sortOrder: 3,
   })
 
-  // ── Services ───────────────────────────────────────────
-  console.log('✂️ Creating services...')
-  const svcHaircut = await Service.create({
+  console.log('🩺 Creating services...')
+  const svcConsult = await Service.create({
     businessId: business._id,
-    categoryId: catHair._id,
-    name: 'Haircut & Style',
-    nameAr: 'قص وتصفيف',
-    description: 'Professional haircut with wash and blow-dry.',
-    price: 250,
+    categoryId: catGp._id,
+    name: 'General Consultation',
+    nameAr: 'كشف عام',
+    description: 'Full general practitioner consultation and examination.',
+    image: 'https://images.unsplash.com/photo-1666214280557-f1b5022eb634?auto=format&fit=crop&w=800&q=80',
+    price: 300,
     currency: 'EGP',
-    duration: 45,
+    duration: 30,
     bufferTime: 10,
     staffRequired: true,
     status: 'active',
   })
 
-  const svcColor = await Service.create({
+  const svcFollowUp = await Service.create({
     businessId: business._id,
-    categoryId: catHair._id,
-    name: 'Hair Coloring',
-    nameAr: 'صبغة شعر',
-    price: 800,
-    currency: 'EGP',
-    duration: 120,
-    bufferTime: 15,
-    staffRequired: true,
-    status: 'active',
-  })
-
-  const svcManicure = await Service.create({
-    businessId: business._id,
-    categoryId: catNails._id,
-    name: 'Classic Manicure',
-    nameAr: 'مانيكير كلاسيك',
+    categoryId: catGp._id,
+    name: 'Follow-up Visit',
+    nameAr: 'زيارة متابعة',
+    description: 'Follow-up appointment after previous consultation.',
+    image: 'https://images.unsplash.com/photo-1576091160550-2173dba07efd?auto=format&fit=crop&w=800&q=80',
     price: 150,
     currency: 'EGP',
-    duration: 30,
+    duration: 15,
     bufferTime: 5,
     staffRequired: true,
     status: 'active',
   })
 
-  const svcFacial = await Service.create({
+  const svcDerma = await Service.create({
     businessId: business._id,
-    categoryId: catSkin._id,
-    name: 'Deep Cleansing Facial',
-    nameAr: 'تنظيف بشرة عميق',
-    price: 400,
+    categoryId: catDerma._id,
+    name: 'Dermatology Consultation',
+    nameAr: 'كشف جلدية',
+    description: 'Skin examination and treatment plan with a specialist.',
+    image: 'https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?auto=format&fit=crop&w=800&q=80',
+    price: 450,
     currency: 'EGP',
-    duration: 60,
+    duration: 30,
     bufferTime: 10,
     staffRequired: true,
     status: 'active',
   })
 
-  // ── Staff ──────────────────────────────────────────────
-  console.log('👥 Creating staff...')
+  const svcLabs = await Service.create({
+    businessId: business._id,
+    categoryId: catDiag._id,
+    name: 'Lab Tests Package',
+    nameAr: 'باقة تحاليل',
+    description: 'Basic blood work and lab diagnostics package.',
+    image: 'https://images.unsplash.com/photo-1579154204601-01588f351e67?auto=format&fit=crop&w=800&q=80',
+    price: 600,
+    currency: 'EGP',
+    duration: 20,
+    bufferTime: 5,
+    staffRequired: false,
+    status: 'active',
+  })
+
+  
+  const svcPediatrics = await Service.create({
+    businessId: business._id,
+    categoryId: catGp._id,
+    name: 'Pediatrics Consultation',
+    nameAr: 'كشف أطفال',
+    description: 'Child health check and pediatric consultation.',
+    image: 'https://images.unsplash.com/photo-1631217868264-e5b90bb7e133?auto=format&fit=crop&w=800&q=80',
+    price: 350,
+    currency: 'EGP',
+    duration: 30,
+    bufferTime: 10,
+    staffRequired: true,
+    status: 'active',
+  })
+
+  const svcCardiology = await Service.create({
+    businessId: business._id,
+    categoryId: catGp._id,
+    name: 'Cardiology Consultation',
+    nameAr: 'كشف قلب',
+    description: 'Heart check-up with a cardiologist.',
+    image: 'https://images.unsplash.com/photo-1579684385127-1ef15d508118?auto=format&fit=crop&w=800&q=80',
+    price: 500,
+    currency: 'EGP',
+    duration: 40,
+    bufferTime: 10,
+    staffRequired: true,
+    status: 'active',
+  })
+
+  const svcUltrasound = await Service.create({
+    businessId: business._id,
+    categoryId: catDiag._id,
+    name: 'Ultrasound Scan',
+    nameAr: 'أشعة تلفزيونية',
+    description: 'Diagnostic ultrasound imaging session.',
+    image: 'https://images.unsplash.com/photo-1516549655169-df83a0774514?auto=format&fit=crop&w=800&q=80',
+    price: 700,
+    currency: 'EGP',
+    duration: 25,
+    bufferTime: 10,
+    staffRequired: true,
+    status: 'active',
+  })
+
+  console.log('👨‍⚕️ Creating staff...')
   const staff1 = await Staff.create({
     businessId: business._id,
     userId: staffUser._id,
@@ -200,63 +257,89 @@ async function seed() {
     lastName: 'Khaled',
     email: 'staff@bookora.app',
     phone: '+201000000003',
-    title: 'Senior Stylist',
-    bio: '10+ years experience in modern cuts and coloring.',
-    serviceIds: [svcHaircut._id, svcColor._id],
+    title: 'General Practitioner',
+    bio: '10+ years in family medicine and primary care.',
+    avatar: 'https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?w=400&q=80',
+    serviceIds: [svcConsult._id, svcFollowUp._id],
     status: 'active',
+    isActive: true,
   })
 
   const staff2 = await Staff.create({
     businessId: business._id,
     firstName: 'Layla',
     lastName: 'Mostafa',
-    email: 'layla@luxebeauty.eg',
-    title: 'Nail Artist',
-    serviceIds: [svcManicure._id],
+    email: 'layla@cairocare.eg',
+    title: 'Dermatologist',
+    bio: 'Specialist in clinical and cosmetic dermatology.',
+    avatar: 'https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=400&q=80',
+    serviceIds: [svcDerma._id],
     status: 'active',
+    isActive: true,
   })
 
   const staff3 = await Staff.create({
     businessId: business._id,
     firstName: 'Mona',
     lastName: 'Said',
-    title: 'Esthetician',
-    serviceIds: [svcFacial._id],
+    title: 'Lab Technician',
+    bio: 'Diagnostics and sample collection specialist.',
+    avatar: 'https://images.unsplash.com/photo-1594824476967-48c8b964273f?w=400&q=80',
+    serviceIds: [svcLabs._id],
     status: 'active',
+    isActive: true,
   })
 
-  // Link services to staff
-  await Service.findByIdAndUpdate(svcHaircut._id, {
-    assignedStaffIds: [staff1._id],
-  })
-  await Service.findByIdAndUpdate(svcColor._id, {
-    assignedStaffIds: [staff1._id],
-  })
-  await Service.findByIdAndUpdate(svcManicure._id, {
-    assignedStaffIds: [staff2._id],
-  })
-  await Service.findByIdAndUpdate(svcFacial._id, {
-    assignedStaffIds: [staff3._id],
+  await Service.findByIdAndUpdate(svcConsult._id, { assignedStaffIds: [staff1._id] })
+  await Service.findByIdAndUpdate(svcFollowUp._id, { assignedStaffIds: [staff1._id] })
+  await Service.findByIdAndUpdate(svcDerma._id, { assignedStaffIds: [staff2._id] })
+  await Service.findByIdAndUpdate(svcLabs._id, { assignedStaffIds: [staff3._id] })
+
+  
+  const staff4 = await Staff.create({
+    businessId: business._id,
+    firstName: 'Karim',
+    lastName: 'Nassar',
+    email: 'karim.nassar@cairocare.eg',
+    title: 'Pediatrician',
+    bio: 'Specialist in child healthcare and vaccinations.',
+    avatar: 'https://images.unsplash.com/photo-1622253692010-333f2da6031d?w=400&q=80',
+    serviceIds: [svcPediatrics._id],
+    status: 'active',
+    isActive: true,
   })
 
-  // ── Bookings ───────────────────────────────────────────
+  const staff5 = await Staff.create({
+    businessId: business._id,
+    firstName: 'Hana',
+    lastName: 'Fathy',
+    email: 'hana.fathy@cairocare.eg',
+    title: 'Cardiologist',
+    bio: 'Cardiology and preventive heart care.',
+    avatar: 'https://images.unsplash.com/photo-1651008376811-b90baee60c1f?w=400&q=80',
+    serviceIds: [svcCardiology._id],
+    status: 'active',
+    isActive: true,
+  })
+
+  await Service.findByIdAndUpdate(svcPediatrics._id, { assignedStaffIds: [staff4._id] })
+  await Service.findByIdAndUpdate(svcCardiology._id, { assignedStaffIds: [staff5._id] })
+  await Service.findByIdAndUpdate(svcUltrasound._id, { assignedStaffIds: [staff3._id] })
+
   console.log('📅 Creating bookings...')
   const today = new Date()
   today.setHours(0, 0, 0, 0)
-
   const tomorrow = new Date(today)
   tomorrow.setDate(tomorrow.getDate() + 1)
-
   const nextWeek = new Date(today)
   nextWeek.setDate(nextWeek.getDate() + 7)
-
   const yesterday = new Date(today)
   yesterday.setDate(yesterday.getDate() - 1)
 
   await Booking.create([
     {
       businessId: business._id,
-      serviceId: svcHaircut._id,
+      serviceId: svcConsult._id,
       staffId: staff1._id,
       customerId: customer._id,
       customerName: 'Nour Ibrahim',
@@ -264,16 +347,16 @@ async function seed() {
       customerPhone: '+201000000004',
       date: tomorrow,
       startTime: '10:00',
-      endTime: '10:45',
-      duration: 45,
+      endTime: '10:30',
+      duration: 30,
       bufferTime: 10,
-      price: 250,
+      price: 300,
       currency: 'EGP',
       status: 'confirmed',
     },
     {
       businessId: business._id,
-      serviceId: svcManicure._id,
+      serviceId: svcDerma._id,
       staffId: staff2._id,
       customerName: 'Yasmin Farid',
       customerEmail: 'yasmin@example.com',
@@ -281,85 +364,142 @@ async function seed() {
       startTime: '11:00',
       endTime: '11:30',
       duration: 30,
-      bufferTime: 5,
-      price: 150,
+      bufferTime: 10,
+      price: 450,
       currency: 'EGP',
       status: 'confirmed',
     },
     {
       businessId: business._id,
-      serviceId: svcFacial._id,
+      serviceId: svcLabs._id,
       staffId: staff3._id,
       customerName: 'Hana Mahmoud',
       customerEmail: 'hana@example.com',
       date: nextWeek,
-      startTime: '14:00',
-      endTime: '15:00',
-      duration: 60,
-      bufferTime: 10,
-      price: 400,
+      startTime: '09:00',
+      endTime: '09:20',
+      duration: 20,
+      bufferTime: 5,
+      price: 600,
       currency: 'EGP',
       status: 'confirmed',
     },
     {
       businessId: business._id,
-      serviceId: svcHaircut._id,
+      serviceId: svcConsult._id,
       staffId: staff1._id,
       customerName: 'Karim Adel',
       customerEmail: 'karim@example.com',
       date: yesterday,
       startTime: '09:00',
-      endTime: '09:45',
-      duration: 45,
+      endTime: '09:30',
+      duration: 30,
       bufferTime: 10,
-      price: 250,
+      price: 300,
       currency: 'EGP',
       status: 'completed',
     },
     {
       businessId: business._id,
-      serviceId: svcColor._id,
+      serviceId: svcFollowUp._id,
       staffId: staff1._id,
       customerName: 'Dina Saleh',
       customerEmail: 'dina@example.com',
       date: yesterday,
       startTime: '12:00',
-      endTime: '14:00',
-      duration: 120,
-      bufferTime: 15,
-      price: 800,
+      endTime: '12:15',
+      duration: 15,
+      bufferTime: 5,
+      price: 150,
       currency: 'EGP',
       status: 'cancelled',
-      cancellationReason: 'Customer requested',
+      cancellationReason: 'Patient requested',
       cancelledAt: new Date(),
+    },
+    {
+      businessId: business._id,
+      serviceId: svcPediatrics._id,
+      staffId: staff4._id,
+      customerName: 'Maya Hassan',
+      customerEmail: 'maya@example.com',
+      customerPhone: '+201111111111',
+      date: nextWeek,
+      startTime: '11:00',
+      endTime: '11:30',
+      duration: 30,
+      bufferTime: 10,
+      price: 350,
+      currency: 'EGP',
+      status: 'confirmed',
+    },
+    {
+      businessId: business._id,
+      serviceId: svcCardiology._id,
+      staffId: staff5._id,
+      customerName: 'Tarek Youssef',
+      customerEmail: 'tarek@example.com',
+      date: tomorrow,
+      startTime: '14:00',
+      endTime: '14:40',
+      duration: 40,
+      bufferTime: 10,
+      price: 500,
+      currency: 'EGP',
+      status: 'confirmed',
     },
   ])
 
-  // ── Reviews ────────────────────────────────────────────
   console.log('⭐ Creating reviews...')
   await Review.create([
     {
       businessId: business._id,
-      serviceId: svcHaircut._id,
+      serviceId: svcConsult._id,
       staffId: staff1._id,
       customerName: 'Karim Adel',
       customerEmail: 'karim@example.com',
       rating: 5,
-      comment: 'Excellent haircut, very professional!',
+      comment: 'Professional doctor and clean clinic. Highly recommend.',
       isPublished: true,
     },
     {
       businessId: business._id,
-      serviceId: svcFacial._id,
+      serviceId: svcDerma._id,
+      staffId: staff2._id,
+      customerName: 'Yasmin Farid',
+      rating: 5,
+      comment: 'Excellent dermatology consultation, clear treatment plan.',
+      isPublished: true,
+    },
+    {
+      businessId: business._id,
+      serviceId: svcLabs._id,
       staffId: staff3._id,
       customerName: 'Hana Mahmoud',
       rating: 4,
-      comment: 'Great facial, will come again.',
+      comment: 'Fast lab service and friendly staff.',
+      isPublished: true,
+    },
+    {
+      businessId: business._id,
+      serviceId: svcCardiology._id,
+      staffId: staff5._id,
+      customerName: 'Tarek Youssef',
+      rating: 5,
+      comment: 'Thorough cardiac examination and clear advice.',
+      isPublished: true,
+    },
+    {
+      businessId: business._id,
+      serviceId: svcPediatrics._id,
+      staffId: staff4._id,
+      customerName: 'Maya Hassan',
+      rating: 5,
+      comment: 'Great with kids, very reassuring doctor.',
       isPublished: true,
     },
   ])
 
-  console.log('\n✅ Seed completed successfully!\n')
+  console.log('\n✅ Clinic seed completed!\n')
   console.log('════════════════════════════════════════')
   console.log(' Demo accounts (password: Password123)')
   console.log('════════════════════════════════════════')
@@ -368,8 +508,9 @@ async function seed() {
   console.log(' staff@bookora.app     → staff')
   console.log(' customer@bookora.app  → customer')
   console.log('════════════════════════════════════════')
-  console.log(` Business slug: luxe-beauty`)
-  console.log(` Business ID:   ${business._id}`)
+  console.log(' Clinic: Cairo Care Clinic')
+  console.log(' Slug:   cairo-care')
+  console.log(` ID:     ${business._id}`)
   console.log('════════════════════════════════════════\n')
 
   await mongoose.disconnect()

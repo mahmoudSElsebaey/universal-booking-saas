@@ -9,6 +9,7 @@ import { Input } from '@/components/ui/Input'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card'
 import { Badge } from '@/components/ui/Badge'
 import { Plus, Pencil, Trash2, X, User } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 
 const schema = z.object({
   firstName: z.string().min(1),
@@ -22,6 +23,7 @@ const schema = z.object({
 type FormData = z.infer<typeof schema>
 
 export default function StaffManagePage() {
+  const { t } = useTranslation(['dashboard', 'common'])
   const { businessId, loading: bizLoading } = useBusinessId()
   const [staff, setStaff] = useState<StaffMember[]>([])
   const [loading, setLoading] = useState(true)
@@ -99,7 +101,7 @@ export default function StaffManagePage() {
   }
 
   const onDelete = async (id: string) => {
-    if (!businessId || !confirm('Remove this staff member?')) return
+    if (!businessId || !confirm('Remove this doctor?')) return
     try {
       await businessApi.deleteStaff(businessId, id)
       await load()
@@ -119,7 +121,7 @@ export default function StaffManagePage() {
   if (!businessId) {
     return (
       <div className="text-center py-16 text-text-secondary">
-        No business linked. Run seed or create a business.
+        {t('dashboard:noBusiness')}
       </div>
     )
   }
@@ -127,9 +129,9 @@ export default function StaffManagePage() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between gap-4">
-        <h1 className="text-h1">Staff</h1>
+        <h1 className="text-h1">{t("dashboard:staff")}</h1>
         <Button leftIcon={<Plus className="h-4 w-4" />} onClick={openCreate}>
-          Add staff
+          {t('dashboard:addStaff')}
         </Button>
       </div>
 
@@ -137,7 +139,7 @@ export default function StaffManagePage() {
         {staff.length === 0 ? (
           <Card className="sm:col-span-2 lg:col-span-3">
             <CardContent className="py-10 text-center text-text-muted">
-              No staff yet
+              {t('common:noResults')}
             </CardContent>
           </Card>
         ) : (
@@ -165,7 +167,7 @@ export default function StaffManagePage() {
                 </div>
                 <div className="mt-4 flex gap-1">
                   <Button variant="outline" size="sm" onClick={() => openEdit(s)}>
-                    <Pencil className="h-3.5 w-3.5 me-1" /> Edit
+                    <Pencil className="h-3.5 w-3.5 me-1" /> {t('common:edit')}
                   </Button>
                   <Button variant="ghost" size="sm" onClick={() => onDelete(s._id)}>
                     <Trash2 className="h-3.5 w-3.5 text-error" />
@@ -184,18 +186,18 @@ export default function StaffManagePage() {
               <X className="h-5 w-5" />
             </button>
             <CardHeader>
-              <CardTitle>{editing ? 'Edit staff' : 'New staff'}</CardTitle>
+              <CardTitle>{editing ? t('dashboard:editStaff') : t('dashboard:addStaff')}</CardTitle>
             </CardHeader>
             <CardContent>
               <form onSubmit={handleSubmit(onSubmit)} className="space-y-3">
                 {error && <p className="text-sm text-error">{error}</p>}
                 <div className="grid grid-cols-2 gap-3">
-                  <Input label="First name" error={errors.firstName?.message} {...register('firstName')} />
-                  <Input label="Last name" error={errors.lastName?.message} {...register('lastName')} />
+                  <Input label={t('common:firstName')} error={errors.firstName?.message} {...register('firstName')} />
+                  <Input label={t('common:lastName')} error={errors.lastName?.message} {...register('lastName')} />
                 </div>
-                <Input label="Email" type="email" {...register('email')} />
-                <Input label="Phone" {...register('phone')} />
-                <Input label="Title" {...register('title')} />
+                <Input label={t('common:email')} type="email" {...register('email')} />
+                <Input label={t('common:phone')} {...register('phone')} />
+                <Input label={t('common:title')} {...register('title')} />
                 <div className="flex gap-2 pt-2">
                   <Button type="button" variant="outline" onClick={() => setModalOpen(false)}>
                     Cancel

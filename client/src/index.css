@@ -197,3 +197,44 @@
     }
   }
 }
+
+/* Swiper — match site primary */
+.swiper-button-next,
+.swiper-button-prev {
+  color: #155E63 !important;
+  background: rgba(255, 255, 255, 0.9);
+  width: 42px !important;
+  height: 42px !important;
+  border-radius: 9999px;
+  box-shadow: 0 2px 8px rgba(31, 41, 51, 0.12);
+  transition: background 0.15s ease, color 0.15s ease, transform 0.15s ease;
+}
+
+.swiper-button-next:hover,
+.swiper-button-prev:hover {
+  background: #155E63 !important;
+  color: #fff !important;
+  transform: scale(1.05);
+}
+
+.swiper-button-next::after,
+.swiper-button-prev::after {
+  font-size: 16px !important;
+  font-weight: 700;
+}
+
+.swiper-pagination-bullet {
+  background: #155E63 !important;
+  opacity: 0.35;
+}
+
+.swiper-pagination-bullet-active {
+  opacity: 1 !important;
+  background: #155E63 !important;
+}
+
+/* On dark hero, keep buttons readable */
+.swiper-slide .swiper-button-next,
+.swiper-slide .swiper-button-prev {
+  color: #155E63;
+}

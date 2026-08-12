@@ -1,14 +1,21 @@
 {
   "title": "احجز موعد",
   "chooseService": "اختر الخدمة",
-  "chooseStaff": "اختر الموظف",
+  "chooseStaff": "اختر الطبيب",
   "chooseDate": "اختر التاريخ",
   "chooseTime": "اختر الوقت",
-  "yourDetails": "بياناتك",
-  "review": "مراجعة الحجز",
-  "confirm": "تأكيد الحجز",
-  "success": "تم تأكيد الحجز!",
+  "yourDetails": "بيانات المريض",
+  "review": "مراجعة الموعد",
+  "confirm": "تأكيد الموعد",
+  "success": "تم تأكيد الموعد!",
   "duration": "المدة",
   "price": "السعر",
-  "minutes": "دقيقة"
+  "minutes": "دقيقة",
+  "anyStaff": "أي طبيب متاح",
+  "customerName": "الاسم الكامل",
+  "customerEmail": "البريد الإلكتروني",
+  "customerPhone": "الهاتف",
+  "notes": "ملاحظات",
+  "noSlots": "لا توجد مواعيد متاحة لهذا اليوم",
+  "followSteps": "اتبع الخطوات لإتمام الحجز"
 }

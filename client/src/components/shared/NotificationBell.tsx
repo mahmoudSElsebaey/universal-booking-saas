@@ -7,7 +7,7 @@ import { useTranslation } from 'react-i18next'
 
 export function NotificationBell() {
   const { isAuthenticated } = useAuth()
-  const { i18n } = useTranslation()
+  const { t, i18n } = useTranslation(['dashboard', 'common'])
   const isAr = i18n.language === 'ar'
   const [open, setOpen] = useState(false)
   const [items, setItems] = useState<AppNotification[]>([])
@@ -73,30 +73,30 @@ export function NotificationBell() {
       >
         <Bell className="h-5 w-5 text-text-secondary" />
         {unread > 0 && (
-          <span className="absolute top-1 end-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-error px-1 text-[10px] font-bold text-white">
+          <span className="absolute top-1 inset-e-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-error px-1 text-[10px] font-bold text-white">
             {unread > 9 ? '9+' : unread}
           </span>
         )}
       </button>
 
       {open && (
-        <div className="absolute end-0 mt-2 w-80 max-w-[calc(100vw-2rem)] rounded-lg border border-border bg-surface shadow-lg z-50 overflow-hidden">
+        <div className="absolute inset-e-0 mt-2 w-80 max-w-[calc(100vw-2rem)] rounded-lg border border-border bg-surface shadow-lg z-50 overflow-hidden">
           <div className="flex items-center justify-between px-4 py-3 border-b border-border">
-            <p className="font-medium text-sm">Notifications</p>
+            <p className="font-medium text-sm">{t("dashboard:notifications", { defaultValue: "Notifications" })}</p>
             {unread > 0 && (
               <button
                 type="button"
                 className="text-xs text-primary hover:underline"
                 onClick={markAll}
               >
-                Mark all read
+                {t('dashboard:markAllRead', { defaultValue: 'Mark all read' })}
               </button>
             )}
           </div>
           <div className="max-h-80 overflow-y-auto">
             {items.length === 0 ? (
               <p className="text-center text-sm text-text-muted py-8">
-                No notifications
+                {t('dashboard:noNotifications', { defaultValue: 'No notifications' })}
               </p>
             ) : (
               items.map((n) => (

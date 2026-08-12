@@ -8,10 +8,10 @@ import { Button } from '@/components/ui/Button'
 import { User } from 'lucide-react'
 
 const AVATARS = [
-  'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400&q=80',
-  'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&q=80',
-  'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=400&q=80',
-  'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&q=80',
+  'https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?w=400&q=80',
+  'https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=400&q=80',
+  'https://images.unsplash.com/photo-1594824476967-48c8b964273f?w=400&q=80',
+  'https://images.unsplash.com/photo-1622253692010-333f2da6031d?w=400&q=80',
 ]
 
 export default function StaffPage() {

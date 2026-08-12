@@ -47,7 +47,7 @@ export interface BusinessSettings {
 }
 
 export const DEFAULT_WORKING_HOURS: WorkingHoursSlot[] = [
-  { day: 'sunday', isOpen: false, openTime: '09:00', closeTime: '18:00' },
+  { day: 'sunday', isOpen: true, openTime: '10:00', closeTime: '16:00' },
   { day: 'monday', isOpen: true, openTime: '09:00', closeTime: '18:00' },
   { day: 'tuesday', isOpen: true, openTime: '09:00', closeTime: '18:00' },
   { day: 'wednesday', isOpen: true, openTime: '09:00', closeTime: '18:00' },
@@ -61,7 +61,7 @@ export const DEFAULT_BUSINESS_SETTINGS: BusinessSettings = {
   timezone: 'Africa/Cairo',
   defaultLanguage: 'en',
   slotIntervalMinutes: 30,
-  minAdvanceHours: 2,
+  minAdvanceHours: 1,
   maxAdvanceDays: 60,
   cancellationPolicyHours: 24,
   requireStaffSelection: true,

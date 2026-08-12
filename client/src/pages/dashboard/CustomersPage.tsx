@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useBusinessId } from '@/hooks/useBusinessId'
 import { bookingApi, type Booking } from '@/services/booking.api'
 import { Card, CardContent } from '@/components/ui/Card'
@@ -15,6 +16,7 @@ interface CustomerRow {
 }
 
 export default function CustomersPage() {
+  const { t } = useTranslation(['dashboard', 'common'])
   const { businessId, loading: bizLoading } = useBusinessId()
   const [bookings, setBookings] = useState<Booking[]>([])
   const [loading, setLoading] = useState(true)
@@ -75,7 +77,7 @@ export default function CustomersPage() {
   if (!businessId) {
     return (
       <div className="py-16 text-center text-text-secondary">
-        No business linked. Create a business first.
+        {t("dashboard:noBusiness")}
       </div>
     )
   }
@@ -83,9 +85,9 @@ export default function CustomersPage() {
   return (
     <div className="space-y-6">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <h1 className="text-h1">Customers</h1>
+        <h1 className="text-h1">{t("dashboard:customers")}</h1>
         <Input
-          placeholder="Search customers..."
+          placeholder={t("dashboard:searchCustomers")}
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           className="sm:max-w-xs"
@@ -95,17 +97,17 @@ export default function CustomersPage() {
       <Card>
         <CardContent className="pt-4">
           {filtered.length === 0 ? (
-            <p className="py-10 text-center text-text-muted">No customers yet</p>
+            <p className="py-10 text-center text-text-muted">{t("dashboard:noData")}</p>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-border text-text-muted">
-                    <th className="pb-3 text-start font-medium">Name</th>
-                    <th className="pb-3 text-start font-medium">Email</th>
-                    <th className="pb-3 text-start font-medium">Bookings</th>
-                    <th className="pb-3 text-start font-medium">Spent</th>
-                    <th className="pb-3 text-start font-medium">Last visit</th>
+                    <th className="pb-3 text-start font-medium">{t("dashboard:name")}</th>
+                    <th className="pb-3 text-start font-medium">{t("dashboard:email")}</th>
+                    <th className="pb-3 text-start font-medium">{t("dashboard:bookingCount")}</th>
+                    <th className="pb-3 text-start font-medium">{t("dashboard:spent")}</th>
+                    <th className="pb-3 text-start font-medium">{t("dashboard:lastVisit")}</th>
                   </tr>
                 </thead>
                 <tbody>

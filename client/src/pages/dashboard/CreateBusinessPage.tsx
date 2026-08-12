@@ -22,8 +22,8 @@ const schema = z.object({
 type Form = z.infer<typeof schema>
 
 const TYPES = [
+  { value: 'clinic', label: 'Clinic / Medical' },
   { value: 'beauty_salon', label: 'Beauty Salon' },
-  { value: 'clinic', label: 'Clinic' },
   { value: 'gym', label: 'Gym / Fitness' },
   { value: 'spa', label: 'Spa' },
   { value: 'consultant', label: 'Consultant' },
@@ -41,7 +41,7 @@ export default function CreateBusinessPage() {
     formState: { errors, isSubmitting },
   } = useForm<Form>({
     resolver: zodResolver(schema),
-    defaultValues: { type: 'beauty_salon' },
+    defaultValues: { type: 'clinic' },
   })
 
   const onSubmit = async (data: Form) => {
@@ -64,9 +64,9 @@ export default function CreateBusinessPage() {
     <div className="mx-auto w-full" style={{ maxWidth: 560 }}>
       <Card variant="elevated" className="w-full">
         <CardHeader>
-          <CardTitle className="text-h2">Create your business</CardTitle>
+          <CardTitle className="text-h2">Create your clinic</CardTitle>
           <CardDescription>
-            Set up your workspace to manage services, staff, and bookings.
+            Set up your clinic to manage services, doctors, and appointments.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -77,7 +77,7 @@ export default function CreateBusinessPage() {
               </div>
             )}
             <Input
-              label="Business name"
+              label="Clinic name"
               error={errors.name?.message}
               required
               {...register('name')}

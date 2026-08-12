@@ -11,19 +11,19 @@ export default function AboutPage() {
         {isAr ? (
           <>
             <p>
-              بوكورا منصة حجز شاملة مصممة للصالونات والعيادات والصالات والمراكز المهنية.
+              عيادة كايرو كير تقدّم رعاية طبية متعددة التخصصات مع حجز مواعيد أونلاين بسهولة.
             </p>
             <p>
-              نساعد الأعمال على إدارة المواعيد والموظفين والخدمات من مكان واحد، مع تجربة سلسة للعملاء بالعربي والإنجليزي.
+              من الطب العام إلى الجلدية والتحاليل — احجز زيارتك في دقائق بالعربي أو الإنجليزي.
             </p>
           </>
         ) : (
           <>
             <p>
-              Bookora is a universal booking platform built for salons, clinics, gyms, and professional studios.
+              Cairo Care Clinic provides trusted multi-specialty care with easy online appointment booking.
             </p>
             <p>
-              We help businesses manage appointments, staff, and services in one place — with a smooth bilingual experience for customers.
+              From general practice to dermatology and lab diagnostics — book your visit in minutes, in Arabic or English.
             </p>
           </>
         )}

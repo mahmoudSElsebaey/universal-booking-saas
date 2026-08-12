@@ -51,6 +51,7 @@ export interface Service {
   name: string
   nameAr?: string
   description?: string
+  descriptionAr?: string
   image?: string
   price: number
   currency?: string

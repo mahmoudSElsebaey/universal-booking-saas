@@ -1,25 +1,32 @@
 import { api } from './api'
 import type { Business, Service, StaffMember } from './business.api'
+import type { Review } from './review.api'
 
 export interface PublicCatalog {
   business: Business
   services: Service[]
   staff: StaffMember[]
+  reviews?: Review[]
+  reviewSummary?: {
+    averageRating: number
+    totalReviews: number
+  }
 }
 
-const DEFAULT_SLUG = localStorage.getItem('businessSlug') || 'luxe-beauty'
-
 export const catalogApi = {
-  getDefaultSlug: () => DEFAULT_SLUG,
+  getDefaultSlug: () =>
+    localStorage.getItem('businessSlug') || 'cairo-care',
 
-  getCatalog: (slug = DEFAULT_SLUG) =>
-    api
-      .get<{ success: boolean; data: PublicCatalog }>(
-        `/businesses/slug/${slug}/catalog`
-      )
-      .then((r) => {
-        localStorage.setItem('businessId', r.data.data.business._id)
-        localStorage.setItem('businessSlug', r.data.data.business.slug)
-        return r.data.data
-      }),
+  getCatalog: async (slug?: string) => {
+    const s = slug || catalogApi.getDefaultSlug()
+    const { data } = await api.get<{ success: boolean; data: PublicCatalog }>(
+      `/businesses/slug/${s}/catalog`
+    )
+    const catalog = data.data
+    if (catalog?.business?._id) {
+      localStorage.setItem('businessId', catalog.business._id)
+      localStorage.setItem('businessSlug', catalog.business.slug)
+    }
+    return catalog
+  },
 }

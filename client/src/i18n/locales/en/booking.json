@@ -1,14 +1,21 @@
 {
   "title": "Book an appointment",
   "chooseService": "Choose a service",
-  "chooseStaff": "Choose staff",
+  "chooseStaff": "Choose a doctor",
   "chooseDate": "Choose a date",
   "chooseTime": "Choose a time",
-  "yourDetails": "Your details",
-  "review": "Review booking",
-  "confirm": "Confirm booking",
-  "success": "Booking confirmed!",
+  "yourDetails": "Patient details",
+  "review": "Review appointment",
+  "confirm": "Confirm appointment",
+  "success": "Appointment confirmed!",
   "duration": "Duration",
   "price": "Price",
-  "minutes": "min"
+  "minutes": "min",
+  "anyStaff": "Any available doctor",
+  "customerName": "Full name",
+  "customerEmail": "Email",
+  "customerPhone": "Phone",
+  "notes": "Notes",
+  "noSlots": "No available times for this day",
+  "followSteps": "Follow the steps to complete your booking"
 }

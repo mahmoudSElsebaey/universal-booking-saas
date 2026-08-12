@@ -8,11 +8,11 @@ import { LanguageSwitcher } from '@/components/shared/LanguageSwitcher'
 import { User, Building2, Bell, Shield, Globe } from 'lucide-react'
 
 const tabs = [
-  { id: 'profile', label: 'Profile', icon: User },
-  { id: 'business', label: 'Business', icon: Building2 },
-  { id: 'notifications', label: 'Notifications', icon: Bell },
-  { id: 'security', label: 'Security', icon: Shield },
-  { id: 'language', label: 'Language', icon: Globe },
+  { id: 'profile', labelKey: 'profile', icon: User },
+  { id: 'business', labelKey: 'business', icon: Building2 },
+  { id: 'notifications', labelKey: 'notifications', icon: Bell },
+  { id: 'security', labelKey: 'security', icon: Shield },
+  { id: 'language', labelKey: 'language', icon: Globe },
 ] as const
 
 type TabId = (typeof tabs)[number]['id']
@@ -49,7 +49,7 @@ export default function SettingsPage() {
       <div>
         <h1 className="text-h1">{t('dashboard:settings')}</h1>
         <p className="text-body-sm text-text-secondary mt-1">
-          Manage your account and business preferences
+          {t('dashboard:manageProfile')}
         </p>
       </div>
 
@@ -67,7 +67,7 @@ export default function SettingsPage() {
               }`}
             >
               <tab.icon className="h-4 w-4" />
-              {tab.label}
+              {t(`dashboard:${(tab as any).labelKey || tab.id}`)}
             </button>
           ))}
         </nav>
@@ -83,18 +83,18 @@ export default function SettingsPage() {
           {activeTab === 'profile' && (
             <Card>
               <CardHeader>
-                <CardTitle>Profile</CardTitle>
+                <CardTitle>{t('common:profile')}</CardTitle>
                 <CardDescription>Your personal information</CardDescription>
               </CardHeader>
               <CardContent>
                 <form onSubmit={handleSaveProfile} className="w-full max-w-lg space-y-4">
                   <Input
-                    label="First name"
+                    label={t('common:firstName')}
                     defaultValue={user?.firstName}
                     name="firstName"
                   />
                   <Input
-                    label="Last name"
+                    label={t('common:lastName')}
                     defaultValue={user?.lastName}
                     name="lastName"
                   />
@@ -104,7 +104,7 @@ export default function SettingsPage() {
                     defaultValue={user?.email}
                     disabled
                   />
-                  <Input label="Phone" defaultValue={user?.phone || ''} name="phone" />
+                  <Input label={t('common:phone')} defaultValue={user?.phone || ''} name="phone" />
                   <Button type="submit" isLoading={saving}>
                     {t('common:save')}
                   </Button>
@@ -116,7 +116,7 @@ export default function SettingsPage() {
           {activeTab === 'business' && isAdmin && (
             <Card>
               <CardHeader>
-                <CardTitle>Business Information</CardTitle>
+                <CardTitle>{t('dashboard:businessInfo')}</CardTitle>
                 <CardDescription>
                   Name, contact, working hours, booking rules — managed via Business API
                 </CardDescription>
@@ -137,7 +137,7 @@ export default function SettingsPage() {
           {activeTab === 'notifications' && (
             <Card>
               <CardHeader>
-                <CardTitle>Notification Preferences</CardTitle>
+                <CardTitle>{t('dashboard:notifications')}</CardTitle>
                 <CardDescription>
                   In-app, email, and SMS channels
                 </CardDescription>
@@ -171,15 +171,15 @@ export default function SettingsPage() {
           {activeTab === 'security' && (
             <Card>
               <CardHeader>
-                <CardTitle>Security</CardTitle>
+                <CardTitle>{t('dashboard:security')}</CardTitle>
                 <CardDescription>Password and session</CardDescription>
               </CardHeader>
               <CardContent className="w-full max-w-lg space-y-4">
-                <Input label="Current password" type="password" />
-                <Input label="New password" type="password" />
-                <Input label="Confirm new password" type="password" />
+                <Input label={t('dashboard:currentPassword')} type="password" />
+                <Input label={t('dashboard:newPassword')} type="password" />
+                <Input label={t('dashboard:confirmNewPassword')} type="password" />
                 <Button onClick={handleSaveProfile} isLoading={saving}>
-                  Update password
+                  {t('dashboard:updatePassword')}
                 </Button>
               </CardContent>
             </Card>

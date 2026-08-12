@@ -1,3 +1,4 @@
+import mongoose from 'mongoose'
 import { Business } from '../models/Business.js'
 import { Service } from '../models/Service.js'
 import { Staff } from '../models/Staff.js'
@@ -117,22 +118,43 @@ export class AvailabilityService {
       }
       staffList = [staff]
     } else if (service.staffRequired) {
+      const sid = new mongoose.Types.ObjectId(serviceId)
       staffList = await Staff.find({
         businessId,
         isActive: true,
         status: 'active',
         $or: [
+          { serviceIds: sid },
           { serviceIds: serviceId },
-          { serviceIds: { $size: 0 } }, // staff with no restrictions
+          { serviceIds: { $size: 0 } },
+          { serviceIds: { $exists: false } },
         ],
       })
+      // Fallback: service.assignedStaffIds
+      if (staffList.length === 0 && service.assignedStaffIds?.length) {
+        staffList = await Staff.find({
+          _id: { $in: service.assignedStaffIds },
+          businessId,
+          isActive: true,
+          status: 'active',
+        })
+      }
+      // Last resort: any active staff of the business
+      if (staffList.length === 0) {
+        staffList = await Staff.find({
+          businessId,
+          isActive: true,
+          status: 'active',
+        }).limit(10)
+      }
     } else {
       // No staff required — generate slots against business hours only
       staffList = [null]
     }
 
     if (staffList.length === 0) {
-      return []
+      // Still generate against business hours so public booking is not empty
+      staffList = [null]
     }
 
     // Existing bookings for that day (blocking statuses)

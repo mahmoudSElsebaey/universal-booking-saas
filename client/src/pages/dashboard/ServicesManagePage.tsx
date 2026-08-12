@@ -9,6 +9,7 @@ import { Input } from '@/components/ui/Input'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card'
 import { Badge } from '@/components/ui/Badge'
 import { Plus, Pencil, Trash2, X } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 
 const schema = z.object({
   name: z.string().min(1),
@@ -22,6 +23,7 @@ const schema = z.object({
 type FormData = z.infer<typeof schema>
 
 export default function ServicesManagePage() {
+  const { t } = useTranslation(['dashboard', 'common'])
   const { businessId, loading: bizLoading } = useBusinessId()
   const [services, setServices] = useState<Service[]>([])
   const [loading, setLoading] = useState(true)
@@ -123,26 +125,26 @@ export default function ServicesManagePage() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between gap-4">
-        <h1 className="text-h1">Services</h1>
+        <h1 className="text-h1">{t("dashboard:services")}</h1>
         <Button leftIcon={<Plus className="h-4 w-4" />} onClick={openCreate}>
-          Add service
+          {t('dashboard:addService')}
         </Button>
       </div>
 
       <Card>
         <CardContent className="pt-4">
           {services.length === 0 ? (
-            <p className="text-center py-8 text-text-muted">No services yet</p>
+            <p className="text-center py-8 text-text-muted">{t('common:noResults')}</p>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-border text-text-muted text-start">
-                    <th className="pb-3 font-medium text-start">Name</th>
-                    <th className="pb-3 font-medium text-start">Duration</th>
-                    <th className="pb-3 font-medium text-start">Price</th>
-                    <th className="pb-3 font-medium text-start">Status</th>
-                    <th className="pb-3 font-medium text-end">Actions</th>
+                    <th className="pb-3 font-medium text-start">{t("dashboard:name")}</th>
+                    <th className="pb-3 font-medium text-start">{t("dashboard:duration")}</th>
+                    <th className="pb-3 font-medium text-start">{t("dashboard:price")}</th>
+                    <th className="pb-3 font-medium text-start">{t("dashboard:status")}</th>
+                    <th className="pb-3 font-medium text-end">{t("dashboard:actions")}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -187,24 +189,24 @@ export default function ServicesManagePage() {
               <X className="h-5 w-5" />
             </button>
             <CardHeader>
-              <CardTitle>{editing ? 'Edit service' : 'New service'}</CardTitle>
+              <CardTitle>{editing ? t('dashboard:editService') : t('dashboard:addService')}</CardTitle>
             </CardHeader>
             <CardContent>
               <form onSubmit={handleSubmit(onSubmit)} className="space-y-3">
                 {error && (
                   <p className="text-sm text-error">{error}</p>
                 )}
-                <Input label="Name" error={errors.name?.message} {...register('name')} />
-                <Input label="Name (Arabic)" {...register('nameAr')} />
+                <Input label={t('common:name')} error={errors.name?.message} {...register('name')} />
+                <Input label="الاسم بالعربي" {...register('nameAr')} />
                 <div className="grid grid-cols-2 gap-3">
                   <Input
-                    label="Price"
+                    label={t('common:price')}
                     type="number"
                     error={errors.price?.message}
                     {...register('price')}
                   />
                   <Input
-                    label="Duration (min)"
+                    label={t('common:duration')}
                     type="number"
                     error={errors.duration?.message}
                     {...register('duration')}

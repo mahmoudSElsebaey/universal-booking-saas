@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import { useBusinessId } from '@/hooks/useBusinessId'
 import { bookingApi, type Booking, type BookingStatus } from '@/services/booking.api'
@@ -17,6 +18,7 @@ const STATUSES: (BookingStatus | 'all')[] = [
 ]
 
 export default function BookingsManagePage() {
+  const { t } = useTranslation(['dashboard', 'common'])
   const { businessId, loading: bizLoading } = useBusinessId()
   const [bookings, setBookings] = useState<Booking[]>([])
   const [loading, setLoading] = useState(true)
@@ -78,7 +80,7 @@ export default function BookingsManagePage() {
   if (!businessId) {
     return (
       <div className="text-center py-16 text-text-secondary">
-        No business linked.
+        {t("dashboard:noBusiness")}
       </div>
     )
   }
@@ -86,15 +88,15 @@ export default function BookingsManagePage() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between gap-3">
-        <h1 className="text-h1">Bookings</h1>
+        <h1 className="text-h1">{t("dashboard:bookings")}</h1>
         <Link to="/dashboard/bookings/new">
-          <Button>New booking</Button>
+          <Button>{t("dashboard:newBooking")}</Button>
         </Link>
       </div>
 
       <div className="flex flex-col sm:flex-row gap-3">
         <Input
-          placeholder="Search customer..."
+          placeholder={t("dashboard:searchBookings")}
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           className="sm:max-w-xs"
@@ -123,18 +125,18 @@ export default function BookingsManagePage() {
       <Card>
         <CardContent className="pt-4">
           {bookings.length === 0 ? (
-            <p className="text-center py-10 text-text-muted">No bookings found</p>
+            <p className="text-center py-10 text-text-muted">{t("dashboard:noData")}</p>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-border text-text-muted">
-                    <th className="pb-3 font-medium text-start">Customer</th>
-                    <th className="pb-3 font-medium text-start">Service</th>
-                    <th className="pb-3 font-medium text-start">Date</th>
-                    <th className="pb-3 font-medium text-start">Time</th>
-                    <th className="pb-3 font-medium text-start">Status</th>
-                    <th className="pb-3 font-medium text-end">Actions</th>
+                    <th className="pb-3 font-medium text-start">{t("dashboard:customer")}</th>
+                    <th className="pb-3 font-medium text-start">{t("dashboard:service")}</th>
+                    <th className="pb-3 font-medium text-start">{t("dashboard:date")}</th>
+                    <th className="pb-3 font-medium text-start">{t("dashboard:time")}</th>
+                    <th className="pb-3 font-medium text-start">{t("dashboard:status")}</th>
+                    <th className="pb-3 font-medium text-end">{t("dashboard:actions")}</th>
                   </tr>
                 </thead>
                 <tbody>

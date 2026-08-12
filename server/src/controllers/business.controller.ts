@@ -180,24 +180,51 @@ export const getStaffForService = asyncHandler(async (req: Request, res: Respons
 // ─── Public catalog by slug ─────────────────────────────────
 export const getPublicCatalog = asyncHandler(async (req: Request, res: Response) => {
   const business = await businessService.getBySlug(req.params.slug)
-  const [services, staff] = await Promise.all([
-    serviceService.list(business._id.toString(), {
-      page: 1,
-      limit: 50,
+  const businessId = business._id
+
+  // Direct queries — more reliable for public site than layered filters
+  const { Service } = await import('../models/Service.js')
+  const { Staff } = await import('../models/Staff.js')
+  const { Review } = await import('../models/Review.js')
+
+  const [services, staff, reviews, reviewAgg] = await Promise.all([
+    Service.find({
+      businessId,
+      $or: [{ isActive: true }, { isActive: { $exists: false } }],
       status: 'active',
-    }),
-    staffService.list(business._id.toString(), {
-      page: 1,
-      limit: 50,
-      status: 'active',
-    }),
+    })
+      .sort({ sortOrder: 1, name: 1 })
+      .limit(50)
+      .lean(),
+    Staff.find({
+      businessId,
+      $or: [{ isActive: true }, { isActive: { $exists: false } }],
+      status: { $in: ['active', 'on_leave'] },
+    })
+      .sort({ sortOrder: 1, firstName: 1 })
+      .limit(50)
+      .lean(),
+    Review.find({ businessId, isPublished: true })
+      .sort({ createdAt: -1 })
+      .limit(12)
+      .lean(),
+    Review.aggregate([
+      { $match: { businessId, isPublished: true } },
+      { $group: { _id: null, avg: { $avg: '$rating' }, count: { $sum: 1 } } },
+    ]),
   ])
+
   res.json({
     success: true,
     data: {
       business,
-      services: services.items,
-      staff: staff.items,
+      services,
+      staff,
+      reviews,
+      reviewSummary: {
+        averageRating: reviewAgg[0] ? Math.round(reviewAgg[0].avg * 10) / 10 : 0,
+        totalReviews: reviewAgg[0]?.count || 0,
+      },
     },
   })
 })

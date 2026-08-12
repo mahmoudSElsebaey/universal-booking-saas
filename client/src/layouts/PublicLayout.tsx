@@ -1,4 +1,4 @@
-import { Link, Outlet } from 'react-router-dom'
+import { Link, NavLink, Outlet } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/Button'
 import { LanguageSwitcher } from '@/components/shared/LanguageSwitcher'
@@ -33,13 +33,21 @@ export function PublicLayout() {
 
           <nav className="hidden md:flex items-center gap-6">
             {links.map((l) => (
-              <Link
+              <NavLink
                 key={l.to}
                 to={l.to}
-                className="text-sm font-medium text-text-secondary hover:text-primary transition-colors"
+                end={l.to === '/'}
+                className={({ isActive }) =>
+                  cn(
+                    'text-sm font-medium transition-colors',
+                    isActive
+                      ? 'text-primary border-b-2 border-primary pb-0.5'
+                      : 'text-text-secondary hover:text-primary'
+                  )
+                }
               >
                 {l.label}
-              </Link>
+              </NavLink>
             ))}
           </nav>
 
@@ -77,14 +85,22 @@ export function PublicLayout() {
         >
           <div className="container-app py-3 space-y-1">
             {links.map((l) => (
-              <Link
+              <NavLink
                 key={l.to}
                 to={l.to}
+                end={l.to === '/'}
                 onClick={() => setOpen(false)}
-                className="block px-3 py-2.5 text-sm font-medium rounded-md text-text-secondary hover:bg-surface-muted"
+                className={({ isActive }) =>
+                  cn(
+                    'block rounded-md px-3 py-2.5 text-sm font-medium',
+                    isActive
+                      ? 'bg-primary-50 text-primary'
+                      : 'text-text-secondary hover:bg-surface-muted'
+                  )
+                }
               >
                 {l.label}
-              </Link>
+              </NavLink>
             ))}
             <div className="flex gap-2 pt-2 px-3">
               <LanguageSwitcher />
