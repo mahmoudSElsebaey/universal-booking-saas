@@ -1,0 +1,14 @@
+{
+  "title": "Book an appointment",
+  "chooseService": "Choose a service",
+  "chooseStaff": "Choose staff",
+  "chooseDate": "Choose a date",
+  "chooseTime": "Choose a time",
+  "yourDetails": "Your details",
+  "review": "Review booking",
+  "confirm": "Confirm booking",
+  "success": "Booking confirmed!",
+  "duration": "Duration",
+  "price": "Price",
+  "minutes": "min"
+}

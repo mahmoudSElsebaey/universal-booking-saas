@@ -1,0 +1,14 @@
+{
+  "title": "احجز موعد",
+  "chooseService": "اختر الخدمة",
+  "chooseStaff": "اختر الموظف",
+  "chooseDate": "اختر التاريخ",
+  "chooseTime": "اختر الوقت",
+  "yourDetails": "بياناتك",
+  "review": "مراجعة الحجز",
+  "confirm": "تأكيد الحجز",
+  "success": "تم تأكيد الحجز!",
+  "duration": "المدة",
+  "price": "السعر",
+  "minutes": "دقيقة"
+}

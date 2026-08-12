@@ -1,0 +1,27 @@
+import type { Request, Response, NextFunction } from 'express'
+import { type ZodSchema, ZodError } from 'zod'
+import { ApiError } from '../utils/ApiError.js'
+
+type Source = 'body' | 'query' | 'params'
+
+export function validate(schema: ZodSchema, source: Source = 'body') {
+  return (req: Request, _res: Response, next: NextFunction) => {
+    try {
+      const data = schema.parse(req[source])
+      req[source] = data
+      next()
+    } catch (error) {
+      if (error instanceof ZodError) {
+        const errors: Record<string, string[]> = {}
+        error.errors.forEach((e) => {
+          const path = e.path.join('.') || 'root'
+          if (!errors[path]) errors[path] = []
+          errors[path].push(e.message)
+        })
+        next(new ApiError(422, 'Validation failed', errors))
+      } else {
+        next(error)
+      }
+    }
+  }
+}
