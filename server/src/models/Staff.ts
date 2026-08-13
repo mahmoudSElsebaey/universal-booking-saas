@@ -15,6 +15,7 @@ export interface IStaffDocument extends Document {
   bio?: string
   bioAr?: string
   title?: string // e.g. "Senior Stylist"
+  titleAr?: string
   serviceIds: mongoose.Types.ObjectId[]
   workingHours: WorkingHoursSlot[]
   daysOff: Date[] // specific dates off
@@ -81,6 +82,7 @@ const staffSchema = new Schema<IStaffDocument>(
     bio: { type: String, maxlength: 1000 },
     bioAr: { type: String, maxlength: 1000 },
     title: { type: String, maxlength: 100 },
+    titleAr: { type: String, maxlength: 100 },
     serviceIds: [
       {
         type: Schema.Types.ObjectId,

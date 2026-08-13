@@ -10,6 +10,7 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card'
 import { Badge } from '@/components/ui/Badge'
 import { Plus, Pencil, Trash2, X, User } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
+import i18n from '@/i18n/config'
 
 const schema = z.object({
   firstName: z.string().min(1),
@@ -17,6 +18,7 @@ const schema = z.object({
   email: z.string().email().optional().or(z.literal('')),
   phone: z.string().optional(),
   title: z.string().optional(),
+  titleAr: z.string().optional(),
   status: z.enum(['active', 'inactive', 'on_leave']).optional(),
 })
 
@@ -30,6 +32,7 @@ export default function StaffManagePage() {
   const [modalOpen, setModalOpen] = useState(false)
   const [editing, setEditing] = useState<StaffMember | null>(null)
   const [error, setError] = useState('')
+   const isAr = i18n.language === "ar";
 
   const {
     register,
@@ -63,7 +66,7 @@ export default function StaffManagePage() {
 
   const openCreate = () => {
     setEditing(null)
-    reset({ firstName: '', lastName: '', email: '', phone: '', title: '', status: 'active' })
+    reset({ firstName: '', lastName: '', email: '', phone: '', title: '',titleAr: '', status: 'active' })
     setModalOpen(true)
   }
 
@@ -75,6 +78,7 @@ export default function StaffManagePage() {
       email: s.email || '',
       phone: s.phone || '',
       title: s.title || '',
+      titleAr: s.titleAr || '',
       status: s.status,
     })
     setModalOpen(true)
@@ -155,7 +159,7 @@ export default function StaffManagePage() {
                       {s.firstName} {s.lastName}
                     </p>
                     <p className="text-body-sm text-text-muted">
-                      {s.title || '—'}
+                      { isAr? s.titleAr : s.title } 
                     </p>
                     <Badge
                       className="mt-2"
@@ -198,6 +202,8 @@ export default function StaffManagePage() {
                 <Input label={t('common:email')} type="email" {...register('email')} />
                 <Input label={t('common:phone')} {...register('phone')} />
                 <Input label={t('common:title')} {...register('title')} />
+                <Input label={t('common:titleAr')} {...register('titleAr')} />
+
                 <div className="flex gap-2 pt-2">
                   <Button type="button" variant="outline" onClick={() => setModalOpen(false)}>
                     Cancel
