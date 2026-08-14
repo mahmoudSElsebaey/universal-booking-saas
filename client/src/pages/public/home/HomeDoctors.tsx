@@ -46,38 +46,48 @@ export function HomeDoctors({ doctors }: Props) {
               1024: { slidesPerView: 3 },
               1280: { slidesPerView: 4 },
             }}
-            className="!pb-2"
+            className="doctors-swiper !pb-2"
           >
             {doctors.map((d, i) => (
-              <SwiperSlide key={d._id}>
-                <Card className="h-full text-center">
-                  <CardContent className="pt-6">
-                    <div className="mx-auto mb-3 h-20 w-20 overflow-hidden rounded-full bg-primary-50 ring-2 ring-primary/10">
+              <SwiperSlide key={d._id} className="!h-auto">
+                <Card className="flex h-full flex-col text-center">
+                  <CardContent className="flex h-full flex-col pt-6 pb-6">
+                    <div className="mx-auto mb-3 h-20 w-20 shrink-0 overflow-hidden rounded-full bg-primary-50 ring-2 ring-primary/10">
                       <img
-                        src={d.avatar ? resolveMediaUrl(d.avatar) : AVATARS[i % AVATARS.length]}
+                        src={
+                          d.avatar
+                            ? resolveMediaUrl(d.avatar)
+                            : AVATARS[i % AVATARS.length]
+                        }
                         alt=""
                         className="h-full w-full object-cover"
                         loading="lazy"
                       />
                     </div>
-                    <h3 className="text-h4">
+                    <h3 className="text-h4 line-clamp-1">
                       {d.firstName} {d.lastName}
                     </h3>
-                    {d.title && (
-                      <p className="mb-2 text-body-sm text-primary">
-                        {isAr && d.titleAr ? d.titleAr : d.title}
-                      </p>
-                    )}
-                    {(d.bio || d.bioAr) && (
-                      <p className="mb-3 line-clamp-2 text-body-sm text-text-secondary">
-                        {isAr && d.bioAr ? d.bioAr : d.bio}
-                      </p>
-                    )}
-                    <Link to="/booking">
-                      <Button size="sm" variant="outline">
-                        {t('bookNow')}
-                      </Button>
-                    </Link>
+                    <p className="mb-2 min-h-[1.25rem] text-body-sm text-primary line-clamp-1">
+                      {d.title
+                        ? isAr && d.titleAr
+                          ? d.titleAr
+                          : d.title
+                        : '\u00A0'}
+                    </p>
+                    <p className="mb-4 min-h-[2.5rem] flex-1 text-body-sm text-text-secondary line-clamp-2">
+                      {d.bio || d.bioAr
+                        ? isAr && d.bioAr
+                          ? d.bioAr
+                          : d.bio
+                        : '\u00A0'}
+                    </p>
+                    <div className="mt-auto">
+                      <Link to="/booking">
+                        <Button size="sm" variant="outline">
+                          {t('bookNow')}
+                        </Button>
+                      </Link>
+                    </div>
                   </CardContent>
                 </Card>
               </SwiperSlide>

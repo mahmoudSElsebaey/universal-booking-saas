@@ -7,6 +7,7 @@ import { ErrorBoundary } from '@/components/shared/ErrorBoundary'
 import { AppRoutes } from '@/routes'
 import { ToastProvider } from '@/components/ui/Toast'
 import { ScrollToTop } from '@/components/shared/ScrollToTop'
+import { WhatsAppButton } from '@/components/shared/WhatsAppButton'
 import './i18n/config'
 import './index.css'
 
@@ -29,6 +30,7 @@ createRoot(document.getElementById('root')!).render(
             <ToastProvider>
               <AppRoutes />
               <ScrollToTop />
+              <WhatsAppButton />
             </ToastProvider>
           </AuthProvider>
         </BrowserRouter>

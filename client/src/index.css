@@ -271,3 +271,16 @@
 .brand-wordmark::after {
   content: none;
 }
+
+
+/* Equal-height doctor cards in Swiper */
+.doctors-swiper .swiper-wrapper {
+  align-items: stretch;
+}
+.doctors-swiper .swiper-slide {
+  height: auto;
+  display: flex;
+}
+.doctors-swiper .swiper-slide > * {
+  width: 100%;
+}
