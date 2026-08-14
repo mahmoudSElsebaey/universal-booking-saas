@@ -11,6 +11,8 @@ import { Badge } from '@/components/ui/Badge'
 import { Plus, Pencil, Trash2, X } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { ImageField } from '@/components/shared/ImageField'
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
+import { useToast } from '@/components/ui/Toast'
 import { resolveMediaUrl } from '@/services/upload.api'
 
 const schema = z.object({
@@ -33,6 +35,9 @@ export default function ServicesManagePage() {
   const [modalOpen, setModalOpen] = useState(false)
   const [editing, setEditing] = useState<Service | null>(null)
   const [error, setError] = useState('')
+  const [deleteId, setDeleteId] = useState<string | null>(null)
+  const [deleting, setDeleting] = useState(false)
+  const { success, error: toastError } = useToast()
 
   const {
     register,
@@ -98,18 +103,25 @@ export default function ServicesManagePage() {
       }
       setModalOpen(false)
       await load()
+      success(t('common:saved', { defaultValue: i18n.language === 'ar' ? 'تم الحفظ بنجاح' : 'Saved successfully' }))
     } catch (err: any) {
       setError(err?.response?.data?.message || 'Failed to save')
+      toastError(err?.response?.data?.message || t('common:errorGeneric'))
     }
   }
 
-  const onDelete = async (id: string) => {
-    if (!businessId || !confirm('Delete this service?')) return
+  const onDelete = async () => {
+    if (!businessId || !deleteId) return
+    setDeleting(true)
     try {
-      await businessApi.deleteService(businessId, id)
+      await businessApi.deleteService(businessId, deleteId)
+      setDeleteId(null)
       await load()
+      success(t('dashboard:deletedSuccess', { defaultValue: i18n.language === 'ar' ? 'تم الحذف بنجاح' : 'Deleted successfully' }))
     } catch {
-      alert(t('dashboard:failedDelete'))
+      toastError(t('dashboard:failedDelete'))
+    } finally {
+      setDeleting(false)
     }
   }
 
@@ -180,7 +192,7 @@ export default function ServicesManagePage() {
                           <Button variant="ghost" size="icon-sm" onClick={() => openEdit(s)}>
                             <Pencil className="h-4 w-4" />
                           </Button>
-                          <Button variant="ghost" size="icon-sm" onClick={() => onDelete(s._id)}>
+                          <Button variant="ghost" size="icon-sm" onClick={() => setDeleteId(s._id)}>
                             <Trash2 className="h-4 w-4 text-error" />
                           </Button>
                         </div>
@@ -193,6 +205,14 @@ export default function ServicesManagePage() {
           )}
         </CardContent>
       </Card>
+
+      <ConfirmDialog
+        open={!!deleteId}
+        message={i18n.language === 'ar' ? 'هل أنت متأكد من حذف هذه الخدمة؟' : 'Are you sure you want to delete this service?'}
+        onConfirm={onDelete}
+        onCancel={() => setDeleteId(null)}
+        loading={deleting}
+      />
 
       {modalOpen && (
         <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/40">

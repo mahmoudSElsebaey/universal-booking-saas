@@ -11,6 +11,8 @@ import { Badge } from '@/components/ui/Badge'
 import { Plus, Pencil, Trash2, X, User } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { ImageField } from '@/components/shared/ImageField'
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
+import { useToast } from '@/components/ui/Toast'
 import { resolveMediaUrl } from '@/services/upload.api'
 
 const schema = z.object({
@@ -36,6 +38,9 @@ export default function StaffManagePage() {
   const [modalOpen, setModalOpen] = useState(false)
   const [editing, setEditing] = useState<StaffMember | null>(null)
   const [error, setError] = useState('')
+  const [deleteId, setDeleteId] = useState<string | null>(null)
+  const [deleting, setDeleting] = useState(false)
+  const { success, error: toastError } = useToast()
 
   const {
     register,
@@ -108,18 +113,25 @@ export default function StaffManagePage() {
       }
       setModalOpen(false)
       await load()
+      success(t('common:saved', { defaultValue: i18n.language === 'ar' ? 'تم الحفظ بنجاح' : 'Saved successfully' }))
     } catch (err: any) {
       setError(err?.response?.data?.message || 'Failed to save')
+      toastError(err?.response?.data?.message || t('common:errorGeneric'))
     }
   }
 
-  const onDelete = async (id: string) => {
-    if (!businessId || !confirm('Remove this doctor?')) return
+  const onDelete = async () => {
+    if (!businessId || !deleteId) return
+    setDeleting(true)
     try {
-      await businessApi.deleteStaff(businessId, id)
+      await businessApi.deleteStaff(businessId, deleteId)
+      setDeleteId(null)
       await load()
+      success(t('dashboard:deletedSuccess', { defaultValue: i18n.language === 'ar' ? 'تم الحذف بنجاح' : 'Deleted successfully' }))
     } catch {
-      alert(t('dashboard:failedDelete'))
+      toastError(t('dashboard:failedDelete'))
+    } finally {
+      setDeleting(false)
     }
   }
 
@@ -186,7 +198,7 @@ export default function StaffManagePage() {
                   <Button variant="outline" size="sm" onClick={() => openEdit(s)}>
                     <Pencil className="h-3.5 w-3.5 me-1" /> {t('common:edit')}
                   </Button>
-                  <Button variant="ghost" size="sm" onClick={() => onDelete(s._id)}>
+                  <Button variant="ghost" size="sm" onClick={() => setDeleteId(s._id)}>
                     <Trash2 className="h-3.5 w-3.5 text-error" />
                   </Button>
                 </div>
@@ -241,6 +253,14 @@ export default function StaffManagePage() {
           </Card>
         </div>
       )}
+
+      <ConfirmDialog
+        open={!!deleteId}
+        message={i18n.language === 'ar' ? 'هل أنت متأكد من حذف هذا الطبيب؟' : 'Are you sure you want to remove this doctor?'}
+        onConfirm={onDelete}
+        onCancel={() => setDeleteId(null)}
+        loading={deleting}
+      />
     </div>
   )
 }

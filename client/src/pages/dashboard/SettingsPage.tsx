@@ -17,6 +17,7 @@ import { Input } from '@/components/ui/Input'
 import { Button } from '@/components/ui/Button'
 import { LanguageSwitcher } from '@/components/shared/LanguageSwitcher'
 import { User, Building2, Bell, Shield, Globe } from 'lucide-react'
+import { useToast } from '@/components/ui/Toast'
 
 const DAYS = [
   'sunday',
@@ -49,6 +50,7 @@ export default function SettingsPage() {
   const { t, i18n } = useTranslation(['dashboard', 'common', 'auth'])
   const isAr = i18n.language === 'ar'
   const { user, setUser, refreshUser } = useAuth()
+  const { success, error: toastError } = useToast()
   const { businessId, loading: bizLoading } = useBusinessId()
   const [activeTab, setActiveTab] = useState<TabId>('profile')
   const [saving, setSaving] = useState(false)
@@ -70,6 +72,12 @@ export default function SettingsPage() {
     smsEnabled: false,
   })
   const [prefsLoading, setPrefsLoading] = useState(false)
+
+  useEffect(() => {
+    if (!message) return
+    const timer = window.setTimeout(() => setMessage(''), 2800)
+    return () => window.clearTimeout(timer)
+  }, [message])
 
   // Business form state
   const [bizLoadingForm, setBizLoadingForm] = useState(false)
@@ -181,9 +189,9 @@ export default function SettingsPage() {
       })
       setUser(updated)
       await refreshUser()
-      setMessage(t('common:profileUpdated'))
+      setMessage(t('common:profileUpdated')); success(t('common:profileUpdated'))
     } catch (err: any) {
-      setError(err?.response?.data?.message || t('common:errorGeneric'))
+      const msg = err?.response?.data?.message || t('common:errorGeneric'); setError(msg); toastError(msg)
     } finally {
       setSaving(false)
     }
@@ -196,19 +204,20 @@ export default function SettingsPage() {
     setError('')
     if (newPassword !== confirmPassword) {
       setError(t('dashboard:passwordMismatch'))
+      toastError(t('dashboard:passwordMismatch'))
       setSaving(false)
       return
     }
     try {
       await authApi.changePassword({ currentPassword, newPassword })
-      setMessage(t('dashboard:passwordUpdated'))
+      setMessage(t('dashboard:passwordUpdated')); success(t('dashboard:passwordUpdated'))
       setCurrentPassword('')
       setNewPassword('')
       setConfirmPassword('')
     } catch (err: any) {
-      setError(
-        err?.response?.data?.message || t('dashboard:currentPasswordWrong')
-      )
+      const em = err?.response?.data?.message || t('dashboard:currentPasswordWrong')
+      setError(em)
+      toastError(em)
     } finally {
       setSaving(false)
     }
@@ -221,9 +230,9 @@ export default function SettingsPage() {
     try {
       const updated = await notificationApi.updatePreferences(notifPrefs)
       setNotifPrefs(updated)
-      setMessage(t('dashboard:settingsSaved'))
+      setMessage(t('dashboard:settingsSaved')); success(t('dashboard:settingsSaved'))
     } catch (err: any) {
-      setError(err?.response?.data?.message || t('common:errorGeneric'))
+      const em = err?.response?.data?.message || t('common:errorGeneric'); setError(em); toastError(em)
     } finally {
       setSaving(false)
     }
@@ -257,11 +266,11 @@ export default function SettingsPage() {
           requireStaffSelection: requireStaff,
         },
       } as Partial<Business>)
-      setMessage(
-        isAr ? 'تم حفظ إعدادات العيادة' : 'Clinic settings saved'
-      )
+      const msg = isAr ? 'تم حفظ إعدادات العيادة' : 'Clinic settings saved'
+      setMessage(msg)
+      success(msg)
     } catch (err: any) {
-      setError(err?.response?.data?.message || t('common:errorGeneric'))
+      const em = err?.response?.data?.message || t('common:errorGeneric'); setError(em); toastError(em)
     } finally {
       setSaving(false)
     }
@@ -310,12 +319,12 @@ export default function SettingsPage() {
 
         <div className="flex-1 min-w-0">
           {message && (
-            <div className="mb-4 rounded-md bg-success-light px-3 py-2 text-sm text-success">
+            <div className="mb-4 rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2.5 text-sm text-emerald-800 shadow-sm transition-all duration-300">
               {message}
             </div>
           )}
           {error && (
-            <div className="mb-4 rounded-md bg-error-light px-3 py-2 text-sm text-error">
+            <div className="mb-4 rounded-xl border border-red-200 bg-red-50 px-3 py-2.5 text-sm text-red-800 shadow-sm">
               {error}
             </div>
           )}

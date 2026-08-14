@@ -8,6 +8,8 @@ import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { cn } from '@/lib/utils'
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
+import { useToast } from '@/components/ui/Toast'
 
 const STATUSES: (BookingStatus | 'all')[] = [
   'all',
@@ -26,6 +28,9 @@ export default function BookingsManagePage() {
   const [loading, setLoading] = useState(true)
   const [status, setStatus] = useState<BookingStatus | 'all'>('all')
   const [search, setSearch] = useState('')
+  const [cancelId, setCancelId] = useState<string | null>(null)
+  const [cancelLoading, setCancelLoading] = useState(false)
+  const { success, error: toastError } = useToast()
 
   const statusLabel = (s: string) => {
     if (s === 'all') return t('all', { defaultValue: isAr ? 'الكل' : 'All' })
@@ -57,14 +62,18 @@ export default function BookingsManagePage() {
     if (!bizLoading) load()
   }, [businessId, bizLoading, status])
 
-  const cancel = async (id: string) => {
-    if (!businessId || !confirm(t('confirmCancel', { defaultValue: 'Cancel this booking?' })))
-      return
+  const confirmCancel = async () => {
+    if (!businessId || !cancelId) return
+    setCancelLoading(true)
     try {
-      await bookingApi.cancel(businessId, id, 'Cancelled by admin')
+      await bookingApi.cancel(businessId, cancelId, 'Cancelled by admin')
+      setCancelId(null)
       await load()
+      success(t('cancelledSuccess', { defaultValue: isAr ? 'تم إلغاء الموعد' : 'Booking cancelled' }))
     } catch {
-      alert(t('failedCancel'))
+      toastError(t('failedCancel'))
+    } finally {
+      setCancelLoading(false)
     }
   }
 
@@ -73,8 +82,9 @@ export default function BookingsManagePage() {
     try {
       await bookingApi.updateStatus(businessId, id, 'completed')
       await load()
+      success(t('completedSuccess', { defaultValue: isAr ? 'تم إكمال الموعد' : 'Booking completed' }))
     } catch {
-      alert(t('failedUpdate'))
+      toastError(t('failedUpdate'))
     }
   }
 
@@ -237,7 +247,7 @@ export default function BookingsManagePage() {
                                 <Button
                                   size="sm"
                                   variant="ghost"
-                                  onClick={() => cancel(b._id)}
+                                  onClick={() => setCancelId(b._id)}
                                 >
                                   {t('common:cancel')}
                                 </Button>
@@ -254,6 +264,16 @@ export default function BookingsManagePage() {
           )}
         </CardContent>
       </Card>
+      <ConfirmDialog
+        open={!!cancelId}
+        title={t('confirmCancel', { defaultValue: isAr ? 'إلغاء الموعد' : 'Cancel booking' })}
+        message={isAr ? 'هل أنت متأكد من إلغاء هذا الموعد؟' : 'Are you sure you want to cancel this booking?'}
+        confirmLabel={isAr ? 'إلغاء الموعد' : 'Cancel booking'}
+        cancelLabel={t('common:close', { defaultValue: isAr ? 'رجوع' : 'Back' })}
+        onConfirm={confirmCancel}
+        onCancel={() => setCancelId(null)}
+        loading={cancelLoading}
+      />
     </div>
   )
 }

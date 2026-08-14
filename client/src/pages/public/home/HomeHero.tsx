@@ -1,13 +1,12 @@
 import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { Swiper, SwiperSlide } from 'swiper/react'
-import { Autoplay, Pagination, Navigation } from 'swiper/modules'
+import { Autoplay, Pagination } from 'swiper/modules'
 // @ts-ignore
 import 'swiper/css'
 // @ts-ignore
 import 'swiper/css/pagination'
 // @ts-ignore
-import 'swiper/css/navigation'
 import { Button } from '@/components/ui/Button'
 import { Badge } from '@/components/ui/Badge'
 import { Calendar, ArrowRight } from 'lucide-react'
@@ -20,10 +19,9 @@ export function HomeHero() {
   return (
     <section className="relative">
       <Swiper
-        modules={[Autoplay, Pagination, Navigation]}
+        modules={[Autoplay, Pagination]}
         autoplay={{ delay: 4500, disableOnInteraction: false }}
         pagination={{ clickable: true }}
-        navigation
         loop
         className="h-105 md:h-130"
       >
