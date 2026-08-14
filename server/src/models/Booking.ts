@@ -17,6 +17,10 @@ export interface IBookingDocument extends Document {
   price: number
   currency: string
   status: BookingStatus
+  paymentMethod?: 'visa' | 'vodafone_cash' | 'cash'
+  paymentStatus?: 'pending' | 'paid' | 'failed' | 'refunded'
+  paidAt?: Date
+  paymentReference?: string
   notes?: string
   cancellationReason?: string
   cancelledAt?: Date
@@ -93,6 +97,18 @@ const bookingSchema = new Schema<IBookingDocument>(
       type: String,
       default: 'EGP',
     },
+    paymentMethod: {
+      type: String,
+      enum: ['visa', 'vodafone_cash', 'cash'],
+    },
+    paymentStatus: {
+      type: String,
+      enum: ['pending', 'paid', 'failed', 'refunded'],
+      default: 'pending',
+      index: true,
+    },
+    paidAt: Date,
+    paymentReference: String,
     status: {
       type: String,
       enum: ['pending', 'confirmed', 'cancelled', 'completed', 'no_show', 'rescheduled'],

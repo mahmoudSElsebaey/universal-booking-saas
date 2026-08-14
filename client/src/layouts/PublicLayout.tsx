@@ -3,13 +3,14 @@ import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/Button'
 import { LanguageSwitcher } from '@/components/shared/LanguageSwitcher'
 import { useAuth } from '@/store/authStore'
-import { Sparkles, Menu, X } from 'lucide-react'
+import { Menu, X } from 'lucide-react'
+import { BrandLogo } from '@/components/shared/BrandLogo'
 import { useState } from 'react'
 import { cn } from '@/lib/utils'
 
 export function PublicLayout() {
   const { t } = useTranslation('common')
-  const { isAuthenticated } = useAuth()
+  const { isAuthenticated, user } = useAuth()
   const [open, setOpen] = useState(false)
 
   const links = [
@@ -20,16 +21,15 @@ export function PublicLayout() {
     { to: '/contact', label: t('contact') },
   ]
 
+  const userLabel = user
+    ? `${user.firstName} ${user.lastName}`.trim() || user.email
+    : ''
+
   return (
     <div className="min-h-screen flex flex-col bg-background">
       <header className="sticky top-0 z-50 border-b border-border bg-surface/95 backdrop-blur">
         <div className="container-app flex h-16 items-center justify-between">
-          <Link to="/" className="flex items-center gap-2">
-            <div className="flex h-9 w-9 items-center justify-center rounded-md bg-primary text-white">
-              <Sparkles className="h-5 w-5" />
-            </div>
-            <span className="text-h4 font-semibold">{t('appName')}</span>
-          </Link>
+          <BrandLogo size="md" />
 
           <nav className="hidden md:flex items-center gap-6">
             {links.map((l) => (
@@ -54,9 +54,14 @@ export function PublicLayout() {
           <div className="hidden md:flex items-center gap-2">
             <LanguageSwitcher />
             {isAuthenticated ? (
-              <Link to="/dashboard">
-                <Button size="sm">Dashboard</Button>
-              </Link>
+              <>
+                <span className="max-w-[140px] truncate text-sm text-text-secondary">
+                  {userLabel}
+                </span>
+                <Link to="/dashboard">
+                  <Button size="sm">{t('dashboard')}</Button>
+                </Link>
+              </>
             ) : (
               <>
                 <Link to="/auth/login">
@@ -71,12 +76,11 @@ export function PublicLayout() {
             )}
           </div>
 
-          <button className="md:hidden p-2" onClick={() => setOpen(!open)}>
+          <button type="button" className="md:hidden p-2" onClick={() => setOpen(!open)}>
             {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
           </button>
         </div>
 
-        {/* Mobile menu */}
         <div
           className={cn(
             'md:hidden border-t border-border bg-surface overflow-hidden transition-all',
@@ -102,13 +106,22 @@ export function PublicLayout() {
                 {l.label}
               </NavLink>
             ))}
-            <div className="flex gap-2 pt-2 px-3">
+            <div className="flex flex-wrap items-center gap-2 pt-2 px-3">
               <LanguageSwitcher />
-              <Link to="/booking" className="flex-1" onClick={() => setOpen(false)}>
-                <Button size="sm" fullWidth>
-                  {t('bookNow')}
-                </Button>
-              </Link>
+              {isAuthenticated ? (
+                <>
+                  <span className="text-sm text-text-secondary">{userLabel}</span>
+                  <Link to="/dashboard" onClick={() => setOpen(false)}>
+                    <Button size="sm">{t('dashboard')}</Button>
+                  </Link>
+                </>
+              ) : (
+                <Link to="/booking" className="flex-1" onClick={() => setOpen(false)}>
+                  <Button size="sm" fullWidth>
+                    {t('bookNow')}
+                  </Button>
+                </Link>
+              )}
             </div>
           </div>
         </div>
@@ -121,15 +134,8 @@ export function PublicLayout() {
       <footer className="border-t border-border bg-surface py-12">
         <div className="container-app grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
           <div>
-            <div className="flex items-center gap-2 mb-3">
-              <div className="flex h-8 w-8 items-center justify-center rounded-md bg-primary text-white">
-                <Sparkles className="h-4 w-4" />
-              </div>
-              <span className="font-semibold">{t('appName')}</span>
-            </div>
-            <p className="text-body-sm text-text-muted">
-              {t('tagline')}
-            </p>
+            <BrandLogo size="sm" className="mb-3" />
+            <p className="text-body-sm text-text-muted">{t('tagline')}</p>
           </div>
           <div>
             <p className="text-label mb-3">{t('services')}</p>
@@ -163,16 +169,12 @@ export function PublicLayout() {
           </div>
           <div>
             <p className="text-label mb-3">{t('contact')}</p>
-            <p className="text-body-sm text-text-secondary">
-              hello@bookora.app
-            </p>
-            <p className="text-body-sm text-text-secondary">
-              Cairo, Egypt
-            </p>
+            <p className="text-body-sm text-text-secondary">hello@bookora.app</p>
+            <p className="text-body-sm text-text-secondary">Cairo, Egypt</p>
           </div>
         </div>
         <div className="container-app mt-8 pt-6 border-t border-border text-center text-caption text-text-muted">
-          © {new Date().getFullYear()} Bookora. All rights reserved.
+          © {new Date().getFullYear()} Bookora
         </div>
       </footer>
     </div>

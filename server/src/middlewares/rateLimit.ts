@@ -1,9 +1,11 @@
 import rateLimit from 'express-rate-limit'
 
+const isDev = process.env.NODE_ENV !== 'production'
+
 /** General API rate limit */
 export const apiLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 300,
+  windowMs: 15 * 60 * 1000,
+  max: isDev ? 5000 : 300,
   standardHeaders: true,
   legacyHeaders: false,
   message: {
@@ -15,7 +17,7 @@ export const apiLimiter = rateLimit({
 /** Stricter limit for auth endpoints */
 export const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 20,
+  max: isDev ? 200 : 20,
   standardHeaders: true,
   legacyHeaders: false,
   message: {
@@ -24,10 +26,13 @@ export const authLimiter = rateLimit({
   },
 })
 
-/** Booking creation limit */
+/**
+ * Only for creating bookings (spam protection).
+ * Do NOT apply to GET list/calendar endpoints.
+ */
 export const bookingLimiter = rateLimit({
-  windowMs: 60 * 60 * 1000, // 1 hour
-  max: 30,
+  windowMs: 60 * 60 * 1000,
+  max: isDev ? 500 : 30,
   standardHeaders: true,
   legacyHeaders: false,
   message: {

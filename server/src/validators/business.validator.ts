@@ -123,6 +123,7 @@ export const createStaffSchema = z.object({
   bio: z.string().max(1000).optional(),
   bioAr: z.string().max(1000).optional(),
   title: z.string().max(100).optional(),
+  titleAr: z.string().max(100).optional(),
   serviceIds: z.array(z.string()).optional(),
   workingHours: z.array(workingHoursSchema).optional(),
   maxBookingsPerDay: z.number().min(1).optional(),

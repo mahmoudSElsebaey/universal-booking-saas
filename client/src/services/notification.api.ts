@@ -28,4 +28,27 @@ export const notificationApi = {
 
   markAllAsRead: () =>
     api.post('/notifications/read-all').then((r) => r.data),
+
+  getPreferences: () =>
+    api
+      .get<{ success: boolean; data: NotificationPreferences }>('/notifications/preferences')
+      .then((r) => r.data.data),
+
+  updatePreferences: (prefs: Partial<NotificationPreferences>) =>
+    api
+      .patch<{ success: boolean; data: NotificationPreferences }>(
+        '/notifications/preferences',
+        prefs
+      )
+      .then((r) => r.data.data),
+}
+
+export interface NotificationPreferences {
+  booking_confirmed: boolean
+  booking_reminder: boolean
+  booking_cancelled: boolean
+  booking_rescheduled: boolean
+  review_received: boolean
+  emailEnabled: boolean
+  smsEnabled: boolean
 }

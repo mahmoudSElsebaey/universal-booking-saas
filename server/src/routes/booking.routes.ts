@@ -9,8 +9,13 @@ import {
   rescheduleBooking,
   getMyBookings,
 } from '../controllers/booking.controller.js'
-import { authMiddleware, requirePermission } from '../middlewares/authMiddleware.js'
+import {
+  authMiddleware,
+  optionalAuthMiddleware,
+  requirePermission,
+} from '../middlewares/authMiddleware.js'
 import { validate } from '../middlewares/validateMiddleware.js'
+import { bookingLimiter } from '../middlewares/rateLimit.js'
 import {
   availabilityQuerySchema,
   createBookingSchema,
@@ -27,8 +32,14 @@ router.get(
   getAvailability
 )
 
-// Create booking (can be public or authenticated)
-router.post('/', validate(createBookingSchema), createBooking)
+// Create booking (public or authenticated — optionalAuth links customerId when logged in)
+router.post(
+  '/',
+  bookingLimiter,
+  optionalAuthMiddleware,
+  validate(createBookingSchema),
+  createBooking
+)
 
 // Customer own bookings
 router.get('/me', authMiddleware, getMyBookings)

@@ -238,3 +238,36 @@
 .swiper-slide .swiper-button-prev {
   color: #155E63;
 }
+
+
+/* Reviews coverflow — side slides softer */
+.reviews-swiper .swiper-slide {
+  opacity: 0.45;
+  transform: scale(0.88);
+  transition: opacity 0.35s ease, transform 0.35s ease;
+}
+.reviews-swiper .swiper-slide-active {
+  opacity: 1;
+  transform: scale(1);
+  z-index: 2;
+}
+.reviews-swiper .swiper-slide-active .review-card {
+  box-shadow: 0 12px 40px -12px rgb(21 94 99 / 0.18);
+}
+
+
+/* Brand wordmark — soft 3D / dimensional type */
+.brand-wordmark {
+  background: linear-gradient(135deg, #1A7A80 0%, #155E63 45%, #0F4A4E 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  text-shadow: none;
+  position: relative;
+  letter-spacing: -0.02em;
+  filter: drop-shadow(0 1px 0 rgba(255, 255, 255, 0.35))
+    drop-shadow(0 2px 4px rgba(15, 63, 66, 0.22));
+}
+.brand-wordmark::after {
+  content: none;
+}

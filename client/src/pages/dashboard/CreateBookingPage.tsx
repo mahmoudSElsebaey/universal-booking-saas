@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
@@ -24,12 +25,15 @@ const schema = z.object({
 type Form = z.infer<typeof schema>
 
 export default function CreateBookingPage() {
+  const { t, i18n } = useTranslation(['dashboard', 'common'])
+  const isAr = i18n.language === 'ar'
   const navigate = useNavigate()
-  const { businessId } = useBusinessId()
+  const { businessId, loading: bizLoading } = useBusinessId()
   const [services, setServices] = useState<Service[]>([])
   const [staff, setStaff] = useState<StaffMember[]>([])
   const [slots, setSlots] = useState<TimeSlot[]>([])
   const [error, setError] = useState('')
+  const [loadingSlots, setLoadingSlots] = useState(false)
 
   const {
     register,
@@ -42,24 +46,40 @@ export default function CreateBookingPage() {
   const serviceId = watch('serviceId')
   const staffId = watch('staffId')
   const date = watch('date')
+  const startTime = watch('startTime')
 
   useEffect(() => {
     if (!businessId) return
-    businessApi.listServices(businessId, { status: 'active', limit: 50 }).then((r) => {
-      setServices(r.data || [])
-    })
+    businessApi
+      .listServices(businessId, { status: 'active', limit: 50 })
+      .then((r) => setServices(r.data || []))
+      .catch(() => setServices([]))
   }, [businessId])
 
   useEffect(() => {
-    if (!businessId || !serviceId) return
+    if (!businessId || !serviceId) {
+      setStaff([])
+      return
+    }
     businessApi
       .getStaffForService(businessId, serviceId)
       .then(setStaff)
-      .catch(() => setStaff([]))
+      .catch(() => {
+        // Fallback: all active staff
+        businessApi
+          .listStaff(businessId, { limit: 50 })
+          .then((r) => setStaff(r.data || []))
+          .catch(() => setStaff([]))
+      })
   }, [businessId, serviceId])
 
   useEffect(() => {
-    if (!businessId || !serviceId || !date) return
+    if (!businessId || !serviceId || !date) {
+      setSlots([])
+      return
+    }
+    setLoadingSlots(true)
+    setValue('startTime', '')
     bookingApi
       .getAvailability({
         businessId,
@@ -67,8 +87,9 @@ export default function CreateBookingPage() {
         staffId: staffId || undefined,
         date,
       })
-      .then((r) => setSlots(r.slots.filter((s) => s.available)))
+      .then((r) => setSlots((r.slots || []).filter((s) => s.available)))
       .catch(() => setSlots([]))
+      .finally(() => setLoadingSlots(false))
   }, [businessId, serviceId, staffId, date])
 
   const onSubmit = async (data: Form) => {
@@ -77,29 +98,44 @@ export default function CreateBookingPage() {
     try {
       await bookingApi.create({
         businessId,
-        ...data,
+        serviceId: data.serviceId,
         staffId: data.staffId || undefined,
+        date: data.date,
+        startTime: data.startTime,
+        customerName: data.customerName,
+        customerEmail: data.customerEmail,
+        customerPhone: data.customerPhone,
+        notes: data.notes,
+        paymentMethod: 'cash',
       })
       navigate('/dashboard/bookings')
     } catch (err: any) {
-      setError(err?.response?.data?.message || 'Failed to create booking')
+      setError(err?.response?.data?.message || t('common:errorGeneric'))
     }
+  }
+
+  if (bizLoading) {
+    return (
+      <div className="flex justify-center py-20">
+        <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+      </div>
+    )
   }
 
   if (!businessId) {
     return (
       <div className="py-16 text-center text-text-secondary">
-        Create a business first.
+        {t('noBusiness')}
       </div>
     )
   }
 
   return (
     <div className="mx-auto w-full space-y-6" style={{ maxWidth: 560 }}>
-      <h1 className="text-h1">New booking</h1>
+      <h1 className="text-h1">{t('newBooking')}</h1>
       <Card>
         <CardHeader>
-          <CardTitle>Booking details</CardTitle>
+          <CardTitle>{t('bookingDetails')}</CardTitle>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
@@ -110,40 +146,45 @@ export default function CreateBookingPage() {
             )}
 
             <div className="space-y-1.5">
-              <label className="text-label">Service</label>
+              <label className="text-label">{t('service')}</label>
               <select
                 className="flex h-10 w-full rounded-md border border-border bg-surface px-3 text-sm"
                 {...register('serviceId')}
               >
-                <option value="">Select service</option>
+                <option value="">{t('selectService')}</option>
                 {services.map((s) => (
                   <option key={s._id} value={s._id}>
-                    {s.name} — {s.price} EGP
+                    {(isAr && s.nameAr ? s.nameAr : s.name)} — {s.price} EGP
                   </option>
                 ))}
               </select>
               {errors.serviceId && (
-                <p className="text-caption text-error">{errors.serviceId.message}</p>
+                <p className="text-caption text-error">
+                  {errors.serviceId.message}
+                </p>
               )}
             </div>
 
             <div className="space-y-1.5">
-              <label className="text-label">Staff (optional)</label>
+              <label className="text-label">{t('staffOptional')}</label>
               <select
                 className="flex h-10 w-full rounded-md border border-border bg-surface px-3 text-sm"
                 {...register('staffId')}
               >
-                <option value="">Any available</option>
+                <option value="">{t('anyAvailable')}</option>
                 {staff.map((s) => (
                   <option key={s._id} value={s._id}>
                     {s.firstName} {s.lastName}
+                    {s.title
+                      ? ` — ${isAr && s.titleAr ? s.titleAr : s.title}`
+                      : ''}
                   </option>
                 ))}
               </select>
             </div>
 
             <Input
-              label="Date"
+              label={t('date')}
               type="date"
               min={new Date().toISOString().slice(0, 10)}
               error={errors.date?.message}
@@ -151,51 +192,79 @@ export default function CreateBookingPage() {
             />
 
             <div className="space-y-1.5">
-              <label className="text-label">Time</label>
-              <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
-                {slots.length === 0 ? (
-                  <p className="col-span-full text-body-sm text-text-muted">
-                    {date ? 'No slots' : 'Pick a date first'}
-                  </p>
-                ) : (
-                  slots.map((slot) => (
-                    <button
-                      key={slot.start}
-                      type="button"
-                      onClick={() => setValue('startTime', slot.start, { shouldValidate: true })}
-                      className="rounded-md border border-border px-2 py-2 text-sm hover:border-primary"
-                    >
-                      {slot.start}
-                    </button>
-                  ))
-                )}
-              </div>
+              <label className="text-label">{t('availableSlots')}</label>
+              {loadingSlots ? (
+                <p className="text-body-sm text-text-muted">
+                  {t('common:loading')}
+                </p>
+              ) : (
+                <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
+                  {slots.length === 0 ? (
+                    <p className="col-span-full text-body-sm text-text-muted">
+                      {date ? t('noSlots') : t('pickDateFirst')}
+                    </p>
+                  ) : (
+                    slots.map((slot) => (
+                      <button
+                        key={slot.start}
+                        type="button"
+                        onClick={() =>
+                          setValue('startTime', slot.start, {
+                            shouldValidate: true,
+                          })
+                        }
+                        className={`rounded-md border px-2 py-2 text-sm transition-colors ${
+                          startTime === slot.start
+                            ? 'border-primary bg-primary text-white'
+                            : 'border-border hover:border-primary'
+                        }`}
+                      >
+                        {slot.start}
+                      </button>
+                    ))
+                  )}
+                </div>
+              )}
               <input type="hidden" {...register('startTime')} />
               {errors.startTime && (
-                <p className="text-caption text-error">{errors.startTime.message}</p>
+                <p className="text-caption text-error">
+                  {errors.startTime.message}
+                </p>
               )}
             </div>
 
             <Input
-              label="Customer name"
+              label={t('customerName')}
               error={errors.customerName?.message}
               {...register('customerName')}
             />
             <Input
-              label="Customer email"
+              label={t('customerEmail')}
               type="email"
               error={errors.customerEmail?.message}
               {...register('customerEmail')}
             />
-            <Input label="Phone" {...register('customerPhone')} />
-            <Input label="Notes" {...register('notes')} />
+            <Input
+              label={t('common:phone')}
+              {...register('customerPhone')}
+            />
+            <Input label={t('common:notes')} {...register('notes')} />
 
-            <div className="flex gap-2">
-              <Button type="button" variant="outline" onClick={() => navigate(-1)}>
-                Cancel
+            <div className="flex flex-col-reverse sm:flex-row gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                className="w-full sm:w-auto"
+                onClick={() => navigate(-1)}
+              >
+                {t('common:cancel')}
               </Button>
-              <Button type="submit" isLoading={isSubmitting}>
-                Create booking
+              <Button
+                type="submit"
+                isLoading={isSubmitting}
+                className="w-full sm:w-auto"
+              >
+                {t('newBooking')}
               </Button>
             </div>
           </form>

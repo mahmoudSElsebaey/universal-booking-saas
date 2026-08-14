@@ -1,3 +1,4 @@
+import mongoose from 'mongoose'
 import { Booking } from '../models/Booking.js'
 import { Service } from '../models/Service.js'
 import { Staff } from '../models/Staff.js'
@@ -18,6 +19,7 @@ function endOfDay(d: Date) {
 
 export class AnalyticsService {
   async getDashboardOverview(businessId: string) {
+    const bizOid = new mongoose.Types.ObjectId(businessId)
     const today = new Date()
     const todayStart = startOfDay(today)
     const todayEnd = endOfDay(today)
@@ -56,7 +58,7 @@ export class AnalyticsService {
       Booking.aggregate([
         {
           $match: {
-            businessId: businessId as any,
+            businessId: new mongoose.Types.ObjectId(businessId),
             status: { $in: ['confirmed', 'completed'] },
           },
         },
@@ -86,7 +88,7 @@ export class AnalyticsService {
 
     // Customers count (unique emails)
     const customersAgg = await Booking.aggregate([
-      { $match: { businessId: businessId as any } },
+      { $match: { businessId: bizOid } },
       { $group: { _id: '$customerEmail' } },
       { $count: 'total' },
     ])
@@ -117,7 +119,7 @@ export class AnalyticsService {
     const trends = await Booking.aggregate([
       {
         $match: {
-          businessId: businessId as any,
+          businessId: new mongoose.Types.ObjectId(businessId),
           createdAt: { $gte: start },
         },
       },
@@ -152,7 +154,7 @@ export class AnalyticsService {
     const result = await Booking.aggregate([
       {
         $match: {
-          businessId: businessId as any,
+          businessId: new mongoose.Types.ObjectId(businessId),
           status: { $in: ['confirmed', 'completed'] },
         },
       },
@@ -192,7 +194,7 @@ export class AnalyticsService {
     const result = await Booking.aggregate([
       {
         $match: {
-          businessId: businessId as any,
+          businessId: new mongoose.Types.ObjectId(businessId),
           staffId: { $exists: true, $ne: null },
           status: { $in: ['confirmed', 'completed'] },
         },
@@ -240,7 +242,7 @@ export class AnalyticsService {
       Booking.aggregate([
         {
           $match: {
-            businessId: businessId as any,
+            businessId: new mongoose.Types.ObjectId(businessId),
             status: { $in: ['confirmed', 'completed'] },
             date: { $gte: startOfMonth },
           },
@@ -250,7 +252,7 @@ export class AnalyticsService {
       Booking.aggregate([
         {
           $match: {
-            businessId: businessId as any,
+            businessId: new mongoose.Types.ObjectId(businessId),
             status: { $in: ['confirmed', 'completed'] },
             date: { $gte: startOfLastMonth, $lte: endOfLastMonth },
           },

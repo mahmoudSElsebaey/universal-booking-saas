@@ -11,11 +11,12 @@ import { Badge } from '@/components/ui/Badge'
 import { bookingApi, type TimeSlot } from '@/services/booking.api'
 import { businessApi, type Service, type StaffMember } from '@/services/business.api'
 import { useBusinessId } from '@/hooks/useBusinessId'
+import { useAuth } from '@/store/authStore'
 import { catalogApi } from '@/services/catalog.api'
 import { Calendar, Check, ChevronLeft, ChevronRight, Clock, User } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
-const STEPS = ['service', 'staff', 'date', 'time', 'details', 'review'] as const
+const STEPS = ['service', 'staff', 'date', 'time', 'details', 'payment', 'review'] as const
 type Step = (typeof STEPS)[number]
 
 const detailsSchema = z.object({
@@ -27,52 +28,13 @@ const detailsSchema = z.object({
 
 type DetailsForm = z.infer<typeof detailsSchema>
 
-// Demo fallback when no API business is linked
 const DEMO_BUSINESS_ID = localStorage.getItem('businessId') || ''
-
-const DEMO_SERVICES: Service[] = [
-  {
-    _id: 'demo-1',
-    businessId: 'demo',
-    name: 'General Consultation',
-    nameAr: 'كشف عام',
-    price: 300,
-    duration: 30,
-    bufferTime: 10,
-    staffRequired: true,
-    status: 'active',
-    sortOrder: 1,
-  },
-  {
-    _id: 'demo-2',
-    businessId: 'demo',
-    name: 'Follow-up Visit',
-    nameAr: 'متابعة',
-    price: 150,
-    duration: 30,
-    bufferTime: 5,
-    staffRequired: true,
-    status: 'active',
-    sortOrder: 2,
-  },
-  {
-    _id: 'demo-3',
-    businessId: 'demo',
-    name: 'Dermatology Consultation',
-    nameAr: 'كشف جلدية',
-    price: 450,
-    duration: 30,
-    bufferTime: 10,
-    staffRequired: true,
-    status: 'active',
-    sortOrder: 3,
-  },
-]
 
 export default function BookingPage() {
   const { t, i18n } = useTranslation(['booking', 'common'])
   const isAr = i18n.language === 'ar'
   const navigate = useNavigate()
+  const { user, isAuthenticated } = useAuth()
 
   const { businessId: resolvedBizId } = useBusinessId()
   const [step, setStep] = useState<Step>('service')
@@ -81,7 +43,7 @@ export default function BookingPage() {
   useEffect(() => {
     if (resolvedBizId) setBusinessId(resolvedBizId)
   }, [resolvedBizId])
-  const [services, setServices] = useState<Service[]>(DEMO_SERVICES)
+  const [services, setServices] = useState<Service[]>([])
   const [staffList, setStaffList] = useState<StaffMember[]>([])
   const [slots, setSlots] = useState<TimeSlot[]>([])
 
@@ -92,15 +54,36 @@ export default function BookingPage() {
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState(false)
+  const [paymentMethod, setPaymentMethod] = useState<'visa' | 'vodafone_cash' | 'cash'>('visa')
+  const [cardNumber, setCardNumber] = useState('')
+  const [cardExpiry, setCardExpiry] = useState('')
+  const [cardCvv, setCardCvv] = useState('')
+  const [vfNumber, setVfNumber] = useState('')
 
   const {
     register,
     handleSubmit,
     getValues,
+    reset,
     formState: { errors },
   } = useForm<DetailsForm>({
     resolver: zodResolver(detailsSchema),
+    defaultValues: {
+      customerName: user ? `${user.firstName} ${user.lastName}`.trim() : '',
+      customerEmail: user?.email || '',
+      customerPhone: user?.phone || '',
+    },
   })
+
+  useEffect(() => {
+    if (user) {
+      reset({
+        customerName: `${user.firstName} ${user.lastName}`.trim(),
+        customerEmail: user.email,
+        customerPhone: user.phone || '',
+      })
+    }
+  }, [user, reset])
 
   // Load public catalog (services + businessId) — no auth required
   useEffect(() => {
@@ -247,6 +230,7 @@ export default function BookingPage() {
         date,
         startTime: time,
         ...details,
+        paymentMethod,
       })
       setSuccess(true)
     } catch (err: any) {
@@ -266,9 +250,10 @@ export default function BookingPage() {
           <Check className="h-8 w-8" />
         </div>
         <h1 className="text-h1 mb-2">{t('booking:success')}</h1>
-        <p className="text-text-secondary mb-6">
+        <p className="text-text-secondary mb-2">
           {service && (isAr ? service.nameAr || service.name : service.name)} · {date} · {time}
         </p>
+        <p className="text-caption text-success mb-6">{t('booking:paymentSuccess')}</p>
         <div className="flex gap-3 justify-center">
           <Button variant="outline" onClick={() => navigate('/')}>
             {t('common:home')}
@@ -399,7 +384,7 @@ export default function BookingPage() {
                         {s.firstName} {s.lastName}
                       </p>
                       {s.title && (
-                        <p className="text-body-sm text-text-muted">{s.title}</p>
+                        <p className="text-body-sm text-text-muted">{isAr && s.titleAr ? s.titleAr : s.title}</p>
                       )}
                     </div>
                   </div>
@@ -476,7 +461,7 @@ export default function BookingPage() {
           {step === 'details' && (
             <form
               className="space-y-4"
-              onSubmit={handleSubmit(() => setStep('review'))}
+              onSubmit={handleSubmit(() => setStep('payment'))}
             >
               <h2 className="text-h3 mb-4">{t('booking:yourDetails')}</h2>
               <Input
@@ -504,6 +489,97 @@ export default function BookingPage() {
             </form>
           )}
 
+
+          {/* Step: Payment */}
+          {step === 'payment' && service && (
+            <div className="space-y-4">
+              <h2 className="text-h3 mb-2">{t('booking:payWith')}</h2>
+              <p className="text-caption text-text-muted">{t('booking:demoPayNote')}</p>
+              <div className="grid gap-3 sm:grid-cols-3">
+                {([
+                  { id: 'visa' as const, label: t('booking:visa') },
+                  { id: 'vodafone_cash' as const, label: t('booking:vodafoneCash') },
+                  { id: 'cash' as const, label: t('booking:cash') },
+                ]).map((m) => (
+                  <button
+                    key={m.id}
+                    type="button"
+                    onClick={() => setPaymentMethod(m.id)}
+                    className={cn(
+                      'rounded-lg border p-4 text-sm font-medium transition-colors text-start',
+                      paymentMethod === m.id
+                        ? 'border-primary bg-primary-50 text-primary ring-2 ring-primary/20'
+                        : 'border-border hover:border-primary/40'
+                    )}
+                  >
+                    {m.label}
+                  </button>
+                ))}
+              </div>
+
+              {paymentMethod === 'visa' && (
+                <div className="space-y-3 rounded-md border border-border p-4">
+                  <Input
+                    label={t('booking:cardNumber')}
+                    placeholder="4111 1111 1111 1111"
+                    value={cardNumber}
+                    onChange={(e) => setCardNumber(e.target.value)}
+                  />
+                  <div className="grid grid-cols-2 gap-3">
+                    <Input
+                      label={t('booking:cardExpiry')}
+                      placeholder="12/28"
+                      value={cardExpiry}
+                      onChange={(e) => setCardExpiry(e.target.value)}
+                    />
+                    <Input
+                      label={t('booking:cardCvv')}
+                      placeholder="123"
+                      value={cardCvv}
+                      onChange={(e) => setCardCvv(e.target.value)}
+                    />
+                  </div>
+                </div>
+              )}
+
+              {paymentMethod === 'vodafone_cash' && (
+                <div className="rounded-md border border-border p-4">
+                  <Input
+                    label={t('booking:vfWallet')}
+                    placeholder="010xxxxxxxx"
+                    value={vfNumber}
+                    onChange={(e) => setVfNumber(e.target.value)}
+                  />
+                </div>
+              )}
+
+              <div className="rounded-md bg-surface-muted p-3 text-sm flex justify-between">
+                <span>{t('booking:price')}</span>
+                <span className="font-semibold text-primary">{service.price} EGP</span>
+              </div>
+
+              <div className="flex gap-2">
+                <Button variant="ghost" onClick={goBack}>{t('common:back')}</Button>
+                <Button
+                  onClick={() => {
+                    if (paymentMethod === 'visa' && (!cardNumber || !cardExpiry || !cardCvv)) {
+                      setError(t('common:required'))
+                      return
+                    }
+                    if (paymentMethod === 'vodafone_cash' && !vfNumber) {
+                      setError(t('common:required'))
+                      return
+                    }
+                    setError('')
+                    setStep('review')
+                  }}
+                >
+                  {t('common:next')}
+                </Button>
+              </div>
+            </div>
+          )}
+
           {/* Step: Review */}
           {step === 'review' && service && (
             <div className="space-y-4">
@@ -523,6 +599,16 @@ export default function BookingPage() {
                 <Row label={t('booking:chooseDate')} value={date} />
                 <Row label={t('booking:chooseTime')} value={time} />
                 <Row label={t('booking:price')} value={`${service.price} EGP`} />
+                <Row
+                  label={t('booking:payment')}
+                  value={
+                    paymentMethod === 'visa'
+                      ? t('booking:visa')
+                      : paymentMethod === 'vodafone_cash'
+                        ? t('booking:vodafoneCash')
+                        : t('booking:cash')
+                  }
+                />
                 <Row label={t('common:fullName')} value={getValues('customerName')} />
                 <Row label="Email" value={getValues('customerEmail')} />
               </div>
@@ -535,7 +621,7 @@ export default function BookingPage() {
                   onClick={handleSubmit(onConfirm)}
                   leftIcon={<Check className="h-4 w-4" />}
                 >
-                  {t('booking:confirm')}
+                  {paymentMethod === 'cash' ? t('booking:confirm') : t('booking:payNow')}
                 </Button>
               </div>
             </div>

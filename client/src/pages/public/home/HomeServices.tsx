@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next'
 import type { Service } from '@/services/business.api'
 import { Button } from '@/components/ui/Button'
 import { Card, CardContent } from '@/components/ui/Card'
-import { FALLBACK_SERVICES, resolveServiceImage } from './homeData'
+import { resolveServiceImage } from './homeData'
 
 type Props = {
   services: Service[]
@@ -13,7 +13,7 @@ type Props = {
 export function HomeServices({ services, loading }: Props) {
   const { t, i18n } = useTranslation('common')
   const isAr = i18n.language === 'ar'
-  const display = services.length ? services : (FALLBACK_SERVICES as Service[])
+  const display = services
 
   const serviceName = (s: Service) => (isAr ? s.nameAr || s.name : s.name)
   const serviceDesc = (s: Service & { descriptionAr?: string }) =>
@@ -33,6 +33,8 @@ export function HomeServices({ services, loading }: Props) {
         <div className="flex justify-center py-12">
           <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
         </div>
+      ) : display.length === 0 ? (
+        <p className="py-12 text-center text-text-muted">{t('noServices')}</p>
       ) : (
         <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {display.map((s) => (

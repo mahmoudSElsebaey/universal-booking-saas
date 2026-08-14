@@ -1,4 +1,5 @@
 import { Notification } from '../models/Notification.js'
+import { User } from '../models/User.js'
 import type { NotificationType, NotificationChannel } from '../models/Notification.js'
 
 interface SendNotificationInput {
@@ -22,7 +23,62 @@ interface SendNotificationInput {
  * - Email / SMS are prepared here (actual sending via provider later)
  */
 export class NotificationService {
+
+  async getPreferences(userId: string) {
+    const user = await User.findById(userId).select('notificationPreferences')
+    const defaults = {
+      booking_confirmed: true,
+      booking_reminder: true,
+      booking_cancelled: true,
+      booking_rescheduled: true,
+      review_received: true,
+      emailEnabled: true,
+      smsEnabled: false,
+    }
+    return { ...defaults, ...(user?.notificationPreferences as any) }
+  }
+
+  async updatePreferences(
+    userId: string,
+    prefs: Partial<{
+      booking_confirmed: boolean
+      booking_reminder: boolean
+      booking_cancelled: boolean
+      booking_rescheduled: boolean
+      review_received: boolean
+      emailEnabled: boolean
+      smsEnabled: boolean
+    }>
+  ) {
+    const user = await User.findById(userId)
+    if (!user) throw new Error('User not found')
+    const current = (user.notificationPreferences as any) || {}
+    user.notificationPreferences = { ...current, ...prefs } as any
+    await user.save()
+    return this.getPreferences(userId)
+  }
+
   async send(input: SendNotificationInput) {
+    // Respect user notification preferences
+    try {
+      const prefs = await this.getPreferences(input.userId)
+      const typeKey = input.type as keyof typeof prefs
+      if (
+        typeKey in prefs &&
+        typeof (prefs as any)[typeKey] === 'boolean' &&
+        !(prefs as any)[typeKey]
+      ) {
+        return null // user disabled this type
+      }
+      let channels = input.channels || ['in_app']
+      if (!prefs.emailEnabled) channels = channels.filter((c) => c !== 'email')
+      if (!prefs.smsEnabled) channels = channels.filter((c) => c !== 'sms')
+      if (!channels.includes('in_app')) channels = ['in_app', ...channels]
+      input = { ...input, channels }
+    } catch {
+      /* continue with defaults */
+    }
+
     const channels = input.channels || ['in_app']
 
     const notification = await Notification.create({

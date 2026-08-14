@@ -14,7 +14,7 @@ export interface IStaffDocument extends Document {
   avatar?: string
   bio?: string
   bioAr?: string
-  title?: string // e.g. "Senior Stylist"
+  title?: string // e.g. "General Practitioner"
   titleAr?: string
   serviceIds: mongoose.Types.ObjectId[]
   workingHours: WorkingHoursSlot[]

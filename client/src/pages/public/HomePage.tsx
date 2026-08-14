@@ -8,6 +8,7 @@ import { HomeServices } from './home/HomeServices'
 import { HomeDoctors } from './home/HomeDoctors'
 import { HomeFeatures } from './home/HomeFeatures'
 import { HomeReviews } from './home/HomeReviews'
+import { HomeHowItWorks } from './home/HomeHowItWorks'
 import { HomeCta } from './home/HomeCta'
 
 export default function HomePage() {
@@ -54,8 +55,20 @@ export default function HomePage() {
       <HomeHero />
       <HomeServices services={services} loading={loading} />
       <HomeDoctors doctors={doctors} />
+      <HomeHowItWorks />
       <HomeFeatures />
-      <HomeReviews reviews={reviews} avgRating={avgRating} />
+      <HomeReviews
+        reviews={reviews}
+        avgRating={avgRating}
+        onReviewAdded={() => {
+          catalogApi.getCatalog().then((c) => {
+            if (c.reviews?.length) {
+              setReviews(c.reviews)
+              setAvgRating(c.reviewSummary?.averageRating || 0)
+            }
+          }).catch(() => {})
+        }}
+      />
       <HomeCta />
     </div>
   )

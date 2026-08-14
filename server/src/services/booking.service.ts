@@ -3,6 +3,8 @@ import { Service } from '../models/Service.js'
 import { Staff } from '../models/Staff.js'
 import { Business } from '../models/Business.js'
 import { ApiError } from '../utils/ApiError.js'
+import { User } from '../models/User.js'
+import { notificationService } from './notification.service.js'
 import { emailService } from './email.service.js'
 import { availabilityService } from './availability.service.js'
 import type { CreateBookingInput } from '../types/booking.js'
@@ -80,7 +82,15 @@ export class BookingService {
       throw new ApiError(409, 'This time slot is no longer available')
     }
 
-    // 6. Create booking
+    // 6. Payment (demo gateway simulation — Visa / Vodafone Cash)
+    const paymentMethod = input.paymentMethod || 'cash'
+    const isOnlinePay = paymentMethod === 'visa' || paymentMethod === 'vodafone_cash'
+    const paymentStatus = isOnlinePay || paymentMethod === 'cash' ? 'paid' : 'pending'
+    const paymentReference = isOnlinePay
+      ? `${paymentMethod.toUpperCase()}-${Date.now().toString(36).toUpperCase()}`
+      : undefined
+
+    // 7. Create booking (confirmed + paid so owner dashboard & analytics update)
     const booking = await Booking.create({
       businessId,
       serviceId,
@@ -97,6 +107,10 @@ export class BookingService {
       price: service.price,
       currency: service.currency || business.settings.currency || 'EGP',
       status: 'confirmed',
+      paymentMethod,
+      paymentStatus,
+      paidAt: paymentStatus === 'paid' ? new Date() : undefined,
+      paymentReference,
       notes: input.notes,
       createdBy: createdBy || undefined,
     })
@@ -126,6 +140,63 @@ export class BookingService {
       })
     } catch (e) {
       console.error('[booking] email failed', e)
+    }
+
+    // In-app notifications (customer + business staff)
+    try {
+      const svcName =
+        typeof populated?.serviceId === 'object' && populated?.serviceId
+          ? (populated.serviceId as any).name
+          : 'Service'
+      const bookingId = booking._id.toString()
+
+      // Notify logged-in customer
+      if (input.customerId) {
+        await notificationService.sendBookingConfirmed({
+          userId: input.customerId,
+          businessId,
+          bookingId,
+          serviceName: svcName,
+          date,
+          time: startTime,
+        })
+      } else {
+        // Try resolve customer by email
+        const customer = await User.findOne({ email: input.customerEmail.toLowerCase() }).select('_id')
+        if (customer) {
+          await notificationService.sendBookingConfirmed({
+            userId: customer._id.toString(),
+            businessId,
+            bookingId,
+            serviceName: svcName,
+            date,
+            time: startTime,
+          })
+        }
+      }
+
+      // Notify business owners / managers
+      const staffUsers = await User.find({
+        businessId,
+        role: { $in: ['business_owner', 'manager', 'super_admin'] },
+        isActive: true,
+      }).select('_id')
+
+      for (const u of staffUsers) {
+        await notificationService.send({
+          userId: u._id.toString(),
+          businessId,
+          type: 'booking_confirmed',
+          title: 'New booking',
+          titleAr: 'حجز جديد',
+          body: `${input.customerName} booked ${svcName} on ${date} at ${startTime}.`,
+          bodyAr: `${input.customerName} حجز ${svcName} يوم ${date} الساعة ${startTime}.`,
+          data: { bookingId },
+          channels: ['in_app'],
+        })
+      }
+    } catch (e) {
+      console.error('[booking] notification failed', e)
     }
 
     return populated
@@ -226,6 +297,47 @@ export class BookingService {
     }
 
     await booking.save()
+
+    // Notify customer on cancel / complete
+    try {
+      if (status === 'cancelled' || status === 'completed') {
+        let userId = booking.customerId?.toString()
+        if (!userId) {
+          const customer = await User.findOne({
+            email: booking.customerEmail.toLowerCase(),
+          }).select('_id')
+          userId = customer?._id.toString()
+        }
+        if (userId) {
+          const service = await Service.findById(booking.serviceId).select('name')
+          const svcName = service?.name || 'Service'
+          if (status === 'cancelled') {
+            await notificationService.sendBookingCancelled({
+              userId,
+              businessId,
+              bookingId: booking._id.toString(),
+              serviceName: svcName,
+              reason: meta?.reason,
+            })
+          } else {
+            await notificationService.send({
+              userId,
+              businessId,
+              type: 'booking_completed',
+              title: 'Visit completed',
+              titleAr: 'تمت الزيارة',
+              body: `Your visit for ${svcName} is marked as completed.`,
+              bodyAr: `تم تسجيل زيارتك لـ ${svcName} كمكتملة.`,
+              data: { bookingId: booking._id.toString() },
+              channels: ['in_app'],
+            })
+          }
+        }
+      }
+    } catch (e) {
+      console.error('[booking] status notification failed', e)
+    }
+
     return booking
   }
 
@@ -285,12 +397,20 @@ export class BookingService {
     return newBooking
   }
 
-  async getCustomerBookings(customerEmail: string, businessId?: string) {
+  async getCustomerBookings(
+    customerEmail: string,
+    options?: { businessId?: string; customerId?: string }
+  ) {
+    const or: any[] = [{ customerEmail: customerEmail.toLowerCase() }]
+    if (options?.customerId) {
+      or.push({ customerId: options.customerId })
+    }
+
     const filter: any = {
-      customerEmail: customerEmail.toLowerCase(),
+      $or: or,
       status: { $nin: ['cancelled'] },
     }
-    if (businessId) filter.businessId = businessId
+    if (options?.businessId) filter.businessId = options.businessId
 
     return Booking.find(filter)
       .populate('serviceId', 'name nameAr duration price')

@@ -1,5 +1,5 @@
 /**
- * Seed script — Clinic demo data
+ * Seed script — Clinic demo data (bilingual EN + AR)
  * Run: npm run seed (from server folder)
  *
  * Demo accounts (password: Password123):
@@ -99,7 +99,7 @@ async function seed() {
     settings: {
       currency: 'EGP',
       timezone: 'Africa/Cairo',
-      defaultLanguage: 'en',
+      defaultLanguage: 'ar',
       slotIntervalMinutes: 30,
       minAdvanceHours: 1,
       maxAdvanceDays: 60,
@@ -127,18 +127,21 @@ async function seed() {
     businessId: business._id,
     name: 'General Practice',
     nameAr: 'طب عام',
+    description: 'Primary care and family medicine',
     sortOrder: 1,
   })
   const catDerma = await Category.create({
     businessId: business._id,
     name: 'Dermatology',
     nameAr: 'جلدية',
+    description: 'Skin care and dermatology',
     sortOrder: 2,
   })
   const catDiag = await Category.create({
     businessId: business._id,
     name: 'Diagnostics',
     nameAr: 'تحاليل وتشخيص',
+    description: 'Lab tests and imaging',
     sortOrder: 3,
   })
 
@@ -149,8 +152,9 @@ async function seed() {
     name: 'General Consultation',
     nameAr: 'كشف عام',
     description: 'Full general practitioner consultation and examination.',
-    descriptionAr: 'كشف عام كامل للطبيب العام',
-    image: 'https://images.unsplash.com/photo-1666214280557-f1b5022eb634?auto=format&fit=crop&w=800&q=80',
+    descriptionAr: 'كشف كامل مع طبيب الأسرة وفحص سريري.',
+    image:
+      'https://images.unsplash.com/photo-1666214280557-f1b5022eb634?auto=format&fit=crop&w=800&q=80',
     price: 300,
     currency: 'EGP',
     duration: 30,
@@ -165,8 +169,9 @@ async function seed() {
     name: 'Follow-up Visit',
     nameAr: 'زيارة متابعة',
     description: 'Follow-up appointment after previous consultation.',
-    descriptionAr: 'زيارة متابعة بعد الكشف السابق',
-    image: 'https://images.unsplash.com/photo-1576091160550-2173dba07efd?auto=format&fit=crop&w=800&q=80',
+    descriptionAr: 'موعد متابعة بعد الكشف السابق.',
+    image:
+      'https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?auto=format&fit=crop&w=800&q=80',
     price: 150,
     currency: 'EGP',
     duration: 15,
@@ -181,8 +186,9 @@ async function seed() {
     name: 'Dermatology Consultation',
     nameAr: 'كشف جلدية',
     description: 'Skin examination and treatment plan with a specialist.',
-    descriptionAr: 'تشخيص الجلدية وخطة العلاج مع المتخصص',
-    image: 'https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?auto=format&fit=crop&w=800&q=80',
+    descriptionAr: 'فحص الجلد وخطة علاج مع أخصائي جلدية.',
+    image:
+      'https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?auto=format&fit=crop&w=800&q=80',
     price: 450,
     currency: 'EGP',
     duration: 30,
@@ -197,8 +203,9 @@ async function seed() {
     name: 'Lab Tests Package',
     nameAr: 'باقة تحاليل',
     description: 'Basic blood work and lab diagnostics package.',
-    descriptionAr: 'تحاليل وتشخيص بسيط للدم وباقة تحاليل',
-    image: 'https://images.unsplash.com/photo-1579154204601-01588f351e67?auto=format&fit=crop&w=800&q=80',
+    descriptionAr: 'باقة تحاليل دم أساسية وتشخيص مخبري.',
+    image:
+      'https://images.unsplash.com/photo-1579154204601-01588f351e67?auto=format&fit=crop&w=800&q=80',
     price: 600,
     currency: 'EGP',
     duration: 20,
@@ -207,15 +214,15 @@ async function seed() {
     status: 'active',
   })
 
-  
   const svcPediatrics = await Service.create({
     businessId: business._id,
     categoryId: catGp._id,
     name: 'Pediatrics Consultation',
     nameAr: 'كشف أطفال',
     description: 'Child health check and pediatric consultation.',
-    descriptionAr: 'تحاليل وتشخيص بسيط للدم وباقة تحاليل',
-    image: 'https://images.unsplash.com/photo-1631217868264-e5b90bb7e133?auto=format&fit=crop&w=800&q=80',
+    descriptionAr: 'فحص صحة الطفل وكشف أطفال.',
+    image:
+      'https://images.unsplash.com/photo-1631217868264-e5b90bb7e133?auto=format&fit=crop&w=800&q=80',
     price: 350,
     currency: 'EGP',
     duration: 30,
@@ -230,8 +237,9 @@ async function seed() {
     name: 'Cardiology Consultation',
     nameAr: 'كشف قلب',
     description: 'Heart check-up with a cardiologist.',
-    descriptionAr: 'تحاليل وتشخيص بسيط للدم وباقة تحاليل',
-    image: 'https://images.unsplash.com/photo-1579684385127-1ef15d508118?auto=format&fit=crop&w=800&q=80',
+    descriptionAr: 'فحص القلب مع أخصائي أمراض القلب.',
+    image:
+      'https://images.unsplash.com/photo-1579684385127-1ef15d508118?auto=format&fit=crop&w=800&q=80',
     price: 500,
     currency: 'EGP',
     duration: 40,
@@ -246,8 +254,9 @@ async function seed() {
     name: 'Ultrasound Scan',
     nameAr: 'أشعة تلفزيونية',
     description: 'Diagnostic ultrasound imaging session.',
-    descriptionAr: 'تحاليل وتشخيص بسيط للدم وباقة تحاليل',
-    image: 'https://images.unsplash.com/photo-1516549655169-df83a0774514?auto=format&fit=crop&w=800&q=80',
+    descriptionAr: 'جلسة تصوير بالموجات فوق الصوتية للتشخيص.',
+    image:
+      'https://images.unsplash.com/photo-1516549655169-df83a0774514?auto=format&fit=crop&w=800&q=80',
     price: 700,
     currency: 'EGP',
     duration: 25,
@@ -256,7 +265,7 @@ async function seed() {
     status: 'active',
   })
 
-  console.log('👨‍⚕️ Creating staff...')
+  console.log('👨‍⚕️ Creating staff (titles & bios EN + AR)...')
   const staff1 = await Staff.create({
     businessId: business._id,
     userId: staffUser._id,
@@ -265,9 +274,11 @@ async function seed() {
     email: 'staff@bookora.app',
     phone: '+201000000003',
     title: 'General Practitioner',
-    titleAr: 'طبيب عام',
+    titleAr: 'طبيب أسرة',
     bio: '10+ years in family medicine and primary care.',
-    avatar: 'https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?w=400&q=80',
+    bioAr: 'أكثر من 10 سنوات في طب الأسرة والرعاية الأولية.',
+    avatar:
+      'https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?w=400&q=80',
     serviceIds: [svcConsult._id, svcFollowUp._id],
     status: 'active',
     isActive: true,
@@ -279,9 +290,11 @@ async function seed() {
     lastName: 'Mostafa',
     email: 'layla@cairocare.eg',
     title: 'Dermatologist',
-    titleAr: 'طبيب جلدية',
+    titleAr: 'أخصائية جلدية',
     bio: 'Specialist in clinical and cosmetic dermatology.',
-    avatar: 'https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=400&q=80',
+    bioAr: 'متخصصة في الجلدية السريرية والتجميلية.',
+    avatar:
+      'https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=400&q=80',
     serviceIds: [svcDerma._id],
     status: 'active',
     isActive: true,
@@ -292,29 +305,27 @@ async function seed() {
     firstName: 'Mona',
     lastName: 'Said',
     title: 'Lab Technician',
-    titleAr: 'طبيب جلدية',
+    titleAr: 'فنية مختبر',
     bio: 'Diagnostics and sample collection specialist.',
-    avatar: 'https://images.unsplash.com/photo-1594824476967-48c8b964273f?w=400&q=80',
-    serviceIds: [svcLabs._id],
+    bioAr: 'متخصصة في التشخيص وسحب العينات.',
+    avatar:
+      'https://images.unsplash.com/photo-1594824476967-48c8b964273f?w=400&q=80',
+    serviceIds: [svcLabs._id, svcUltrasound._id],
     status: 'active',
     isActive: true,
   })
 
-  await Service.findByIdAndUpdate(svcConsult._id, { assignedStaffIds: [staff1._id] })
-  await Service.findByIdAndUpdate(svcFollowUp._id, { assignedStaffIds: [staff1._id] })
-  await Service.findByIdAndUpdate(svcDerma._id, { assignedStaffIds: [staff2._id] })
-  await Service.findByIdAndUpdate(svcLabs._id, { assignedStaffIds: [staff3._id] })
-
-  
   const staff4 = await Staff.create({
     businessId: business._id,
     firstName: 'Karim',
     lastName: 'Nassar',
     email: 'karim.nassar@cairocare.eg',
     title: 'Pediatrician',
-    titleAr: 'طبيب اطفال',
+    titleAr: 'طبيب أطفال',
     bio: 'Specialist in child healthcare and vaccinations.',
-    avatar: 'https://images.unsplash.com/photo-1622253692010-333f2da6031d?w=400&q=80',
+    bioAr: 'متخصص في رعاية الأطفال والتطعيمات.',
+    avatar:
+      'https://images.unsplash.com/photo-1622253692010-333f2da6031d?w=400&q=80',
     serviceIds: [svcPediatrics._id],
     status: 'active',
     isActive: true,
@@ -326,17 +337,37 @@ async function seed() {
     lastName: 'Fathy',
     email: 'hana.fathy@cairocare.eg',
     title: 'Cardiologist',
-    titleAr: 'طبيب قلب',
+    titleAr: 'أخصائية قلب',
     bio: 'Cardiology and preventive heart care.',
-    avatar: 'https://images.unsplash.com/photo-1651008376811-b90baee60c1f?w=400&q=80',
+    bioAr: 'أمراض القلب والرعاية الوقائية للقلب.',
+    avatar:
+      'https://images.unsplash.com/photo-1651008376811-b90baee60c1f?w=400&q=80',
     serviceIds: [svcCardiology._id],
     status: 'active',
     isActive: true,
   })
 
-  await Service.findByIdAndUpdate(svcPediatrics._id, { assignedStaffIds: [staff4._id] })
-  await Service.findByIdAndUpdate(svcCardiology._id, { assignedStaffIds: [staff5._id] })
-  await Service.findByIdAndUpdate(svcUltrasound._id, { assignedStaffIds: [staff3._id] })
+  await Service.findByIdAndUpdate(svcConsult._id, {
+    assignedStaffIds: [staff1._id],
+  })
+  await Service.findByIdAndUpdate(svcFollowUp._id, {
+    assignedStaffIds: [staff1._id],
+  })
+  await Service.findByIdAndUpdate(svcDerma._id, {
+    assignedStaffIds: [staff2._id],
+  })
+  await Service.findByIdAndUpdate(svcLabs._id, {
+    assignedStaffIds: [staff3._id],
+  })
+  await Service.findByIdAndUpdate(svcPediatrics._id, {
+    assignedStaffIds: [staff4._id],
+  })
+  await Service.findByIdAndUpdate(svcCardiology._id, {
+    assignedStaffIds: [staff5._id],
+  })
+  await Service.findByIdAndUpdate(svcUltrasound._id, {
+    assignedStaffIds: [staff3._id],
+  })
 
   console.log('📅 Creating bookings...')
   const today = new Date()
@@ -365,6 +396,9 @@ async function seed() {
       price: 300,
       currency: 'EGP',
       status: 'confirmed',
+      paymentMethod: 'visa',
+      paymentStatus: 'paid',
+      paidAt: new Date(),
     },
     {
       businessId: business._id,
@@ -380,6 +414,9 @@ async function seed() {
       price: 450,
       currency: 'EGP',
       status: 'confirmed',
+      paymentMethod: 'visa',
+      paymentStatus: 'paid',
+      paidAt: new Date(),
     },
     {
       businessId: business._id,
@@ -395,6 +432,9 @@ async function seed() {
       price: 600,
       currency: 'EGP',
       status: 'confirmed',
+      paymentMethod: 'visa',
+      paymentStatus: 'paid',
+      paidAt: new Date(),
     },
     {
       businessId: business._id,
@@ -410,6 +450,9 @@ async function seed() {
       price: 300,
       currency: 'EGP',
       status: 'completed',
+      paymentMethod: 'visa',
+      paymentStatus: 'paid',
+      paidAt: new Date(),
     },
     {
       businessId: business._id,
@@ -443,6 +486,9 @@ async function seed() {
       price: 350,
       currency: 'EGP',
       status: 'confirmed',
+      paymentMethod: 'visa',
+      paymentStatus: 'paid',
+      paidAt: new Date(),
     },
     {
       businessId: business._id,
@@ -458,10 +504,13 @@ async function seed() {
       price: 500,
       currency: 'EGP',
       status: 'confirmed',
+      paymentMethod: 'visa',
+      paymentStatus: 'paid',
+      paidAt: new Date(),
     },
   ])
 
-  console.log('⭐ Creating reviews...')
+  console.log('⭐ Creating reviews (EN + AR comments)...')
   await Review.create([
     {
       businessId: business._id,
@@ -511,7 +560,7 @@ async function seed() {
     },
   ])
 
-  console.log('\n✅ Clinic seed completed!\n')
+  console.log('\n✅ Clinic seed completed (bilingual)!\n')
   console.log('════════════════════════════════════════')
   console.log(' Demo accounts (password: Password123)')
   console.log('════════════════════════════════════════')

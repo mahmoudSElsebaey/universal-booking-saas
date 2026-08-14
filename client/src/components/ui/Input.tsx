@@ -1,4 +1,5 @@
-import { forwardRef, type InputHTMLAttributes } from 'react'
+import { forwardRef, useState, type InputHTMLAttributes } from 'react'
+import { Eye, EyeOff } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 export interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
@@ -7,6 +8,8 @@ export interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
   hint?: string
   leftIcon?: React.ReactNode
   rightIcon?: React.ReactNode
+  /** Show eye toggle for password fields (default true when type=password) */
+  passwordToggle?: boolean
 }
 
 export const Input = forwardRef<HTMLInputElement, InputProps>(
@@ -20,11 +23,32 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
       rightIcon,
       id,
       disabled,
+      type,
+      passwordToggle,
       ...props
     },
     ref
   ) => {
     const inputId = id || props.name
+    const isPassword = type === 'password'
+    const showToggle = passwordToggle ?? isPassword
+    const [visible, setVisible] = useState(false)
+    const resolvedType = isPassword && showToggle ? (visible ? 'text' : 'password') : type
+
+    const endIcon =
+      isPassword && showToggle ? (
+        <button
+          type="button"
+          tabIndex={-1}
+          className="text-text-muted hover:text-text focus:outline-none"
+          onClick={() => setVisible((v) => !v)}
+          aria-label={visible ? 'Hide password' : 'Show password'}
+        >
+          {visible ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+        </button>
+      ) : (
+        rightIcon
+      )
 
     return (
       <div className="w-full space-y-1.5">
@@ -45,6 +69,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
           <input
             ref={ref}
             id={inputId}
+            type={resolvedType}
             disabled={disabled}
             className={cn(
               'flex h-10 w-full rounded-md border bg-surface px-3 py-2 text-sm text-text',
@@ -56,15 +81,15 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
                 ? 'border-error focus-visible:ring-error'
                 : 'border-border hover:border-border-strong',
               leftIcon && 'ps-10',
-              rightIcon && 'pe-10',
+              endIcon && 'pe-10',
               className
             )}
             {...props}
           />
 
-          {rightIcon && (
+          {endIcon && (
             <div className="absolute inset-y-0 end-0 flex items-center pe-3 text-text-muted">
-              {rightIcon}
+              {endIcon}
             </div>
           )}
         </div>

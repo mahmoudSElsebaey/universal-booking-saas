@@ -16,9 +16,9 @@ import {
   LogOut,
   Menu,
   X,
-  Sparkles,
   ClipboardList,
 } from 'lucide-react'
+import { BrandLogo } from '@/components/shared/BrandLogo'
 import { cn } from '@/lib/utils'
 
 const adminNav = [
@@ -88,10 +88,7 @@ export function DashboardLayout() {
         style={{ width: SIDEBAR_W }}
       >
         <div className="flex h-16 items-center gap-2 border-b border-border px-5">
-          <div className="flex h-9 w-9 items-center justify-center rounded-md bg-primary text-white">
-            <Sparkles className="h-5 w-5" />
-          </div>
-          <span className="font-semibold text-text">Bookora</span>
+          <BrandLogo to="/dashboard" size="md" />
           <button
             type="button"
             className="ms-auto p-1 lg:hidden"

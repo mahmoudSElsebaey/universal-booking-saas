@@ -31,6 +31,10 @@ export interface Booking {
   price: number
   currency: string
   status: BookingStatus
+  paymentMethod?: 'visa' | 'vodafone_cash' | 'cash'
+  paymentStatus?: 'pending' | 'paid' | 'failed' | 'refunded'
+  paidAt?: string
+  paymentReference?: string
   notes?: string
   createdAt: string
 }
@@ -45,6 +49,7 @@ export interface CreateBookingPayload {
   customerEmail: string
   customerPhone?: string
   notes?: string
+  paymentMethod?: 'visa' | 'vodafone_cash' | 'cash'
 }
 
 export const bookingApi = {

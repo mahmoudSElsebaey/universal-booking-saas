@@ -29,7 +29,8 @@ export class AuthService {
       firstName: input.firstName,
       lastName: input.lastName,
       phone: input.phone,
-      role: input.role || 'customer',
+      // Always customer on public register — privileged roles are assigned by admins only
+      role: 'customer',
       isEmailVerified: false, // in production send verification email
     })
 
@@ -185,6 +186,45 @@ export class AuthService {
       isEmailVerified: user.isEmailVerified,
       businessId: user.businessId?.toString(),
     }
+  }
+
+
+  async updateProfile(userId: string, input: { firstName?: string; lastName?: string; phone?: string }) {
+    const user = await User.findById(userId)
+    if (!user) {
+      throw new ApiError(404, 'User not found')
+    }
+    if (input.firstName !== undefined) user.firstName = input.firstName
+    if (input.lastName !== undefined) user.lastName = input.lastName
+    if (input.phone !== undefined) user.phone = input.phone
+    await user.save()
+    return {
+      id: user._id.toString(),
+      email: user.email,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      phone: user.phone,
+      role: user.role,
+      avatar: user.avatar,
+      isEmailVerified: user.isEmailVerified,
+      businessId: user.businessId?.toString(),
+    }
+  }
+
+
+  async changePassword(userId: string, input: { currentPassword: string; newPassword: string }) {
+    const user = await User.findById(userId).select('+password')
+    if (!user) {
+      throw new ApiError(404, 'User not found')
+    }
+    const ok = await user.comparePassword(input.currentPassword)
+    if (!ok) {
+      throw new ApiError(400, 'Current password is incorrect')
+    }
+    user.password = input.newPassword
+    user.refreshToken = undefined
+    await user.save()
+    return { message: 'Password updated successfully' }
   }
 
   private generateTokens(user: {

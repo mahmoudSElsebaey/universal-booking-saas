@@ -1,20 +1,47 @@
 import axios from 'axios'
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api/v1'
+/**
+ * API base URL.
+ * - Development: falls back to local backend if VITE_API_URL is unset.
+ * - Production (Vercel): VITE_API_URL MUST be set; otherwise requests fail fast
+ *   instead of silently hitting localhost.
+ */
+const isDev = import.meta.env.DEV
+export const API_URL =
+  import.meta.env.VITE_API_URL ||
+  (isDev ? 'http://localhost:5000/api/v1' : '')
+
+/** Origin without /api/v1 — used for /uploads static files in local dev */
+export const API_ORIGIN = API_URL.replace(/\/api\/v1\/?$/, '')
+
+if (!API_URL) {
+  console.error(
+    '[Bookora] VITE_API_URL is not set. Set it in your hosting env (e.g. Vercel) to your API base URL including /api/v1.'
+  )
+}
 
 export const api = axios.create({
-  baseURL: API_URL,
+  baseURL: API_URL || undefined,
   withCredentials: true, // send cookies (refresh token)
   headers: {
     'Content-Type': 'application/json',
   },
 })
 
-// Attach access token from memory / localStorage
+// Attach access token + fix FormData Content-Type (must include boundary)
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem('accessToken')
   if (token) {
     config.headers.Authorization = `Bearer ${token}`
+  }
+  // Critical: let the browser set multipart boundary for FormData
+  if (typeof FormData !== 'undefined' && config.data instanceof FormData) {
+    if (config.headers && typeof config.headers.delete === 'function') {
+      config.headers.delete('Content-Type')
+    } else if (config.headers) {
+      delete (config.headers as any)['Content-Type']
+      delete (config.headers as any)['content-type']
+    }
   }
   return config
 })
@@ -75,7 +102,6 @@ api.interceptors.response.use(
       } catch (refreshError) {
         processQueue(refreshError, null)
         localStorage.removeItem('accessToken')
-        // Optionally redirect to login
         return Promise.reject(refreshError)
       } finally {
         isRefreshing = false

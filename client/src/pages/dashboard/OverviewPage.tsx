@@ -98,7 +98,7 @@ export default function OverviewPage() {
       <div>
         <h1 className="text-h1 text-text">{t('overview')}</h1>
         <p className="text-body-sm text-text-secondary mt-1">
-          Welcome back, {user?.firstName}
+          {t('welcomeBack')}, {user?.firstName}
         </p>
       </div>
 
@@ -128,22 +128,22 @@ export default function OverviewPage() {
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <StatsCard
-          title="Completed"
+          title={t('completed')}
           value={stats.completedBookings}
           icon={CheckCircle2}
         />
         <StatsCard
-          title="Cancelled"
+          title={t('cancelled')}
           value={stats.cancelledBookings}
           icon={XCircle}
         />
         <StatsCard
-          title="Active Services"
+          title={t('activeServices')}
           value={stats.activeServices}
           icon={Scissors}
         />
         <StatsCard
-          title="Active Staff"
+          title={t('activeStaff')}
           value={stats.activeStaff}
           icon={UserCheck}
         />
@@ -153,12 +153,12 @@ export default function OverviewPage() {
       <div className="grid gap-6 lg:grid-cols-3">
         <Card className="lg:col-span-2">
           <CardHeader>
-            <CardTitle>Booking Trends (14 days)</CardTitle>
+            <CardTitle>{t('bookingTrends')} (14)</CardTitle>
           </CardHeader>
           <CardContent>
             {trends.length === 0 ? (
               <p className="text-body-sm text-text-muted py-8 text-center">
-                No data yet
+                {t('noData')}
               </p>
             ) : (
               <div className="h-64">
@@ -199,7 +199,7 @@ export default function OverviewPage() {
           <CardContent className="space-y-3">
             {upcomingAppointments.length === 0 ? (
               <p className="text-body-sm text-text-muted text-center py-4">
-                No upcoming appointments
+                {t('noUpcoming')}
               </p>
             ) : (
               upcomingAppointments.slice(0, 6).map((b: any) => (
@@ -226,22 +226,22 @@ export default function OverviewPage() {
       {/* Recent */}
       <Card>
         <CardHeader>
-          <CardTitle>Recent Bookings</CardTitle>
+          <CardTitle>{t('recentBookings')}</CardTitle>
         </CardHeader>
         <CardContent>
           {recentBookings.length === 0 ? (
             <p className="text-body-sm text-text-muted text-center py-6">
-              No bookings yet
+              {t('noBookingsYet')}
             </p>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-border text-start text-text-muted">
-                    <th className="pb-3 font-medium text-start">Customer</th>
-                    <th className="pb-3 font-medium text-start">Service</th>
-                    <th className="pb-3 font-medium text-start">Staff</th>
-                    <th className="pb-3 font-medium text-start">Status</th>
+                    <th className="pb-3 font-medium text-start">{t("customer")}</th>
+                    <th className="pb-3 font-medium text-start">{t("service")}</th>
+                    <th className="pb-3 font-medium text-start">{t("doctor")}</th>
+                    <th className="pb-3 font-medium text-start">{t("status")}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -293,15 +293,15 @@ function CustomerOverview() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-h1">Welcome, {user?.firstName}</h1>
+        <h1 className="text-h1">{t('welcomeBack')}, {user?.firstName}</h1>
         <p className="text-body-sm text-text-secondary mt-1">
-          Manage your bookings and profile
+          {t('manageProfile')}
         </p>
       </div>
       <Card>
         <CardContent className="py-8 text-center">
           <p className="text-text-secondary">
-            Go to <strong>{t('bookings')}</strong> to see your appointments.
+            {t('bookings')} — {t('noUpcoming')}
           </p>
         </CardContent>
       </Card>

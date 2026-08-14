@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
+import { resolveMediaUrl } from '@/services/upload.api'
 import { catalogApi } from '@/services/catalog.api'
 import type { StaffMember } from '@/services/business.api'
 import { Card, CardContent } from '@/components/ui/Card'
@@ -50,7 +51,7 @@ export default function StaffPage() {
               <CardContent className="pt-6">
                 <div className="mx-auto mb-4 h-24 w-24 overflow-hidden rounded-full bg-primary-50">
                   {s.avatar ? (
-                    <img src={s.avatar} alt="" className="h-full w-full object-cover" />
+                    <img src={resolveMediaUrl(s.avatar)} alt="" className="h-full w-full object-cover" />
                   ) : (
                     <img
                       src={AVATARS[i % AVATARS.length]}
@@ -64,10 +65,10 @@ export default function StaffPage() {
                   {s.firstName} {s.lastName}
                 </h3>
                 {s.title && (
-                  <p className="mb-2 text-body-sm text-primary">{s.title}</p>
+                  <p className="mb-2 text-body-sm text-primary">{(i18n.language === "ar" && s.titleAr) ? s.titleAr : s.title}</p>
                 )}
-                {s.bio && (
-                  <p className="mb-4 text-body-sm text-text-secondary">{s.bio}</p>
+                {(isAr ? s.bioAr || s.bio : s.bio) && (
+                  <p className="mb-4 text-body-sm text-text-secondary">{isAr ? s.bioAr || s.bio : s.bio}</p>
                 )}
                 <Link to="/booking">
                   <Button size="sm" variant="outline">

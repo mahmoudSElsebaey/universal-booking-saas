@@ -1,0 +1,35 @@
+# Dependencies
+node_modules/
+
+# Env / secrets
+.env
+.env.*
+!.env.example
+!**/.env.example
+
+# Builds
+dist/
+build/
+.vercel/
+.railway/
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+
+# Uploads (local dev only)
+server/uploads/
+uploads/
+
+# OS / IDE
+.DS_Store
+.idea/
+.vscode/
+*.swp
+Thumbs.db
+
+# Coverage / temp
+coverage/
+tmp/
+temp/

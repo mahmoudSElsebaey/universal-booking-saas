@@ -122,6 +122,8 @@ export const getMyBookings = asyncHandler(async (req: Request, res: Response) =>
   if (!req.user?.email) {
     return res.status(401).json({ success: false, message: 'Unauthorized' })
   }
-  const bookings = await bookingService.getCustomerBookings(req.user.email)
+  const bookings = await bookingService.getCustomerBookings(req.user.email, {
+    customerId: req.user.userId,
+  })
   res.json({ success: true, data: bookings })
 })

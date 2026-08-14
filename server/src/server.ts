@@ -2,19 +2,19 @@ import mongoose from 'mongoose'
 import app from './app.js'
 import { env } from './config/env.js'
 
-const start = async () => {
+async function bootstrap() {
   try {
+    mongoose.set('strictQuery', true)
     await mongoose.connect(env.mongodbUri)
-    console.log('✅ MongoDB connected')
+    console.log('[db] Connected to MongoDB')
 
     app.listen(env.port, () => {
-      console.log(`🚀 Server running on http://localhost:${env.port}`)
-      console.log(`📦 Environment: ${env.nodeEnv}`)
+      console.log(`[server] Listening on port ${env.port} (${env.nodeEnv})`)
     })
-  } catch (error) {
-    console.error('Failed to start server:', error)
+  } catch (err) {
+    console.error('[db] Connection failed', err)
     process.exit(1)
   }
 }
 
-start()
+bootstrap()

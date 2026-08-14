@@ -13,39 +13,56 @@ declare global {
   }
 }
 
+async function attachUserFromToken(req: Request): Promise<boolean> {
+  const authHeader = req.headers.authorization
+  const token =
+    authHeader?.startsWith('Bearer ') ? authHeader.slice(7) : undefined
+  if (!token) return false
+
+  const payload = verifyAccessToken(token)
+  const user = await User.findById(payload.userId).select(
+    '_id email role businessId isActive'
+  )
+  if (!user || !user.isActive) return false
+
+  req.user = {
+    id: user._id.toString(),
+    userId: user._id.toString(),
+    email: user.email,
+    role: user.role as UserRole,
+    businessId: user.businessId?.toString(),
+  }
+  return true
+}
+
 export async function authMiddleware(
   req: Request,
   _res: Response,
   next: NextFunction
 ) {
   try {
-    const authHeader = req.headers.authorization
-    const token =
-      authHeader?.startsWith('Bearer ') ? authHeader.slice(7) : undefined
-
-    if (!token) {
+    const ok = await attachUserFromToken(req)
+    if (!ok) {
       throw new ApiError(401, 'Authentication required')
     }
-
-    const payload = verifyAccessToken(token)
-
-    const user = await User.findById(payload.userId).select('_id email role businessId isActive')
-    if (!user || !user.isActive) {
-      throw new ApiError(401, 'User not found or inactive')
-    }
-
-    req.user = {
-      id: user._id.toString(),
-      userId: user._id.toString(),
-      email: user.email,
-      role: user.role as UserRole,
-      businessId: user.businessId?.toString(),
-    }
-
     next()
   } catch (error) {
     next(error)
   }
+}
+
+/** Attach user if token present; never fail (for public booking etc.) */
+export async function optionalAuthMiddleware(
+  req: Request,
+  _res: Response,
+  next: NextFunction
+) {
+  try {
+    await attachUserFromToken(req)
+  } catch {
+    // ignore invalid/expired token on public routes
+  }
+  next()
 }
 
 export function requireRoles(...roles: UserRole[]) {

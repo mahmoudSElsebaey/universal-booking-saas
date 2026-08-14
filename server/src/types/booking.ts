@@ -29,6 +29,7 @@ export interface CreateBookingInput {
   customerPhone?: string
   notes?: string
   customerId?: string // if logged-in customer
+  paymentMethod?: 'visa' | 'vodafone_cash' | 'cash'
 }
 
 export interface AvailabilityQuery {

@@ -4,10 +4,13 @@ import { asyncHandler } from '../middlewares/asyncHandler.js'
 import { env } from '../config/env.js'
 
 const REFRESH_COOKIE = 'refreshToken'
+
+/** Cross-origin (e.g. Vercel frontend + Railway/Render API) requires SameSite=None + Secure in production */
+const isProd = env.nodeEnv === 'production'
 const cookieOptions = {
   httpOnly: true,
-  secure: env.nodeEnv === 'production',
-  sameSite: 'lax' as const,
+  secure: isProd,
+  sameSite: (isProd ? 'none' : 'lax') as 'none' | 'lax',
   maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
   path: '/',
 }
@@ -63,8 +66,8 @@ export const logout = asyncHandler(async (req: Request, res: Response) => {
 
   res.clearCookie(REFRESH_COOKIE, {
     httpOnly: true,
-    secure: env.nodeEnv === 'production',
-    sameSite: 'lax',
+    secure: isProd,
+    sameSite: isProd ? 'none' : 'lax',
     path: '/',
   })
 
@@ -92,6 +95,25 @@ export const forgotPassword = asyncHandler(async (req: Request, res: Response) =
 
 export const resetPassword = asyncHandler(async (req: Request, res: Response) => {
   const result = await authService.resetPassword(req.body)
+  res.json({
+    success: true,
+    message: result.message,
+  })
+})
+
+
+export const updateMe = asyncHandler(async (req: Request, res: Response) => {
+  const user = await authService.updateProfile(req.user!.userId, req.body)
+  res.json({
+    success: true,
+    message: 'Profile updated',
+    data: user,
+  })
+})
+
+
+export const changePassword = asyncHandler(async (req: Request, res: Response) => {
+  const result = await authService.changePassword(req.user!.userId, req.body)
   res.json({
     success: true,
     message: result.message,

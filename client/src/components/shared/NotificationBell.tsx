@@ -39,6 +39,18 @@ export function NotificationBell() {
     return () => document.removeEventListener('mousedown', onClick)
   }, [])
 
+  // Lock body scroll when panel open on small screens
+  useEffect(() => {
+    if (!open) return
+    const isNarrow = window.matchMedia('(max-width: 640px)').matches
+    if (!isNarrow) return
+    const prev = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    return () => {
+      document.body.style.overflow = prev
+    }
+  }, [open])
+
   if (!isAuthenticated) return null
 
   const markAll = async () => {
@@ -69,57 +81,82 @@ export function NotificationBell() {
         type="button"
         className="relative p-2 rounded-md hover:bg-surface-muted"
         onClick={() => setOpen(!open)}
-        aria-label="Notifications"
+        aria-label={t('notifications')}
       >
         <Bell className="h-5 w-5 text-text-secondary" />
         {unread > 0 && (
-          <span className="absolute top-1 inset-e-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-error px-1 text-[10px] font-bold text-white">
+          <span className="absolute top-1 end-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-error px-1 text-[10px] font-bold text-white">
             {unread > 9 ? '9+' : unread}
           </span>
         )}
       </button>
 
       {open && (
-        <div className="absolute inset-e-0 mt-2 w-80 max-w-[calc(100vw-2rem)] rounded-lg border border-border bg-surface shadow-lg z-50 overflow-hidden">
-          <div className="flex items-center justify-between px-4 py-3 border-b border-border">
-            <p className="font-medium text-sm">{t("dashboard:notifications", { defaultValue: "Notifications" })}</p>
-            {unread > 0 && (
-              <button
-                type="button"
-                className="text-xs text-primary hover:underline"
-                onClick={markAll}
-              >
-                {t('dashboard:markAllRead', { defaultValue: 'Mark all read' })}
-              </button>
+        <>
+          {/* Mobile backdrop */}
+          <div
+            className="fixed inset-0 z-40 bg-black/30 sm:hidden"
+            onClick={() => setOpen(false)}
+            aria-hidden
+          />
+          <div
+            className={cn(
+              'z-50 overflow-hidden border border-border bg-surface shadow-lg',
+              // Mobile: full-width bottom sheet style
+              'fixed inset-x-3 top-16 max-h-[min(70vh,28rem)] rounded-xl',
+              // Desktop: dropdown under bell
+              'sm:absolute sm:inset-x-auto sm:top-auto sm:end-0 sm:mt-2 sm:w-80 sm:max-h-96 sm:rounded-lg'
             )}
-          </div>
-          <div className="max-h-80 overflow-y-auto">
-            {items.length === 0 ? (
-              <p className="text-center text-sm text-text-muted py-8">
-                {t('dashboard:noNotifications', { defaultValue: 'No notifications' })}
-              </p>
-            ) : (
-              items.map((n) => (
+          >
+            <div className="flex items-center justify-between px-4 py-3 border-b border-border shrink-0">
+              <p className="font-medium text-sm">{t('notifications')}</p>
+              <div className="flex items-center gap-3">
+                {unread > 0 && (
+                  <button
+                    type="button"
+                    className="text-xs text-primary hover:underline"
+                    onClick={markAll}
+                  >
+                    {t('markAllRead')}
+                  </button>
+                )}
                 <button
-                  key={n._id}
                   type="button"
-                  onClick={() => !n.isRead && markOne(n._id)}
-                  className={cn(
-                    'w-full text-start px-4 py-3 border-b border-border-subtle hover:bg-surface-muted transition-colors',
-                    !n.isRead && 'bg-primary-50/50'
-                  )}
+                  className="text-xs text-text-muted sm:hidden"
+                  onClick={() => setOpen(false)}
                 >
-                  <p className="text-sm font-medium text-text">
-                    {isAr && n.titleAr ? n.titleAr : n.title}
-                  </p>
-                  <p className="text-xs text-text-muted mt-0.5 line-clamp-2">
-                    {isAr && n.bodyAr ? n.bodyAr : n.body}
-                  </p>
+                  {t('common:close', { defaultValue: isAr ? 'إغلاق' : 'Close' })}
                 </button>
-              ))
-            )}
+              </div>
+            </div>
+            <div className="overflow-y-auto max-h-[min(60vh,22rem)] sm:max-h-80">
+              {items.length === 0 ? (
+                <p className="text-center text-sm text-text-muted py-8">
+                  {t('noNotifications')}
+                </p>
+              ) : (
+                items.map((n) => (
+                  <button
+                    key={n._id}
+                    type="button"
+                    onClick={() => !n.isRead && markOne(n._id)}
+                    className={cn(
+                      'w-full text-start px-4 py-3 border-b border-border-subtle hover:bg-surface-muted transition-colors',
+                      !n.isRead && 'bg-primary-50/50'
+                    )}
+                  >
+                    <p className="text-sm font-medium text-text">
+                      {isAr && n.titleAr ? n.titleAr : n.title}
+                    </p>
+                    <p className="text-xs text-text-muted mt-0.5 line-clamp-2">
+                      {isAr && n.bodyAr ? n.bodyAr : n.body}
+                    </p>
+                  </button>
+                ))
+              )}
+            </div>
           </div>
-        </div>
+        </>
       )}
     </div>
   )

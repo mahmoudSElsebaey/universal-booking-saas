@@ -104,7 +104,7 @@ cd server && npm run seed
 | staff@bookora.app     | staff           |
 | customer@bookora.app  | customer         |
 
-Business slug: `luxe-beauty`
+Business slug: `cairo-care`
 
 ### Run
 
@@ -171,12 +171,14 @@ cd client && npm run dev
 
 ## Production Checklist
 
-- [ ] Strong unique JWT secrets
+- [ ] Strong unique JWT secrets (`JWT_ACCESS_SECRET`, `JWT_REFRESH_SECRET`)
 - [ ] NODE_ENV=production
-- [ ] MongoDB Atlas with auth
-- [ ] CLIENT_URL matches frontend domain
-- [ ] HTTPS (secure cookies)
+- [ ] MongoDB Atlas with auth (`MONGODB_URI`)
+- [ ] CLIENT_URL = exact frontend origin (CORS + reset links)
+- [ ] VITE_API_URL = API base including `/api/v1` (Vercel env)
+- [ ] HTTPS (required for SameSite=None refresh cookies)
 - [ ] Never run seed in production
+- [ ] Public register always creates `customer` only
 
 ---
 

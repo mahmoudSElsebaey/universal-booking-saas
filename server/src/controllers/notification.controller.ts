@@ -28,3 +28,14 @@ export const markAllAsRead = asyncHandler(async (req: Request, res: Response) =>
   await notificationService.markAllAsRead(req.user!.userId)
   res.json({ success: true, message: 'All notifications marked as read' })
 })
+
+
+export const getPreferences = asyncHandler(async (req: Request, res: Response) => {
+  const prefs = await notificationService.getPreferences(req.user!.userId)
+  res.json({ success: true, data: prefs })
+})
+
+export const updatePreferences = asyncHandler(async (req: Request, res: Response) => {
+  const prefs = await notificationService.updatePreferences(req.user!.userId, req.body)
+  res.json({ success: true, message: 'Preferences updated', data: prefs })
+})

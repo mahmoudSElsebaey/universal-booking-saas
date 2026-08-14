@@ -18,6 +18,15 @@ export interface IUserDocument extends Document {
   passwordResetExpires?: Date
   emailVerificationToken?: string
   lastLoginAt?: Date
+  notificationPreferences?: {
+    booking_confirmed: boolean
+    booking_reminder: boolean
+    booking_cancelled: boolean
+    booking_rescheduled: boolean
+    review_received: boolean
+    emailEnabled: boolean
+    smsEnabled: boolean
+  }
   comparePassword(candidate: string): Promise<boolean>
   createdAt: Date
   updatedAt: Date
@@ -81,6 +90,15 @@ const userSchema = new Schema<IUserDocument>(
     passwordResetExpires: Date,
     emailVerificationToken: String,
     lastLoginAt: Date,
+    notificationPreferences: {
+      booking_confirmed: { type: Boolean, default: true },
+      booking_reminder: { type: Boolean, default: true },
+      booking_cancelled: { type: Boolean, default: true },
+      booking_rescheduled: { type: Boolean, default: true },
+      review_received: { type: Boolean, default: true },
+      emailEnabled: { type: Boolean, default: true },
+      smsEnabled: { type: Boolean, default: false },
+    },
   },
   {
     timestamps: true,

@@ -17,6 +17,7 @@ export const createBookingSchema = z.object({
   customerEmail: z.string().email(),
   customerPhone: z.string().optional(),
   notes: z.string().max(500).optional(),
+  paymentMethod: z.enum(['visa', 'vodafone_cash', 'cash']).optional(),
 })
 
 export const updateBookingStatusSchema = z.object({

@@ -62,6 +62,16 @@ export const authApi = {
     return data
   },
 
+  changePassword: async (payload: { currentPassword: string; newPassword: string }) => {
+    const { data } = await api.post('/auth/change-password', payload)
+    return data
+  },
+
+  updateProfile: async (payload: { firstName?: string; lastName?: string; phone?: string }) => {
+    const { data } = await api.patch<{ success: boolean; data: User }>('/auth/me', payload)
+    return data.data
+  },
+
   resetPassword: async (token: string, password: string) => {
     const { data } = await api.post('/auth/reset-password', { token, password })
     return data

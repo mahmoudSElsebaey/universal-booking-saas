@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import { useEffect, useMemo, useState } from 'react'
 import { useBusinessId } from '@/hooks/useBusinessId'
 import { bookingApi, type Booking } from '@/services/booking.api'
@@ -15,6 +16,9 @@ function daysInMonth(d: Date) {
 }
 
 export default function CalendarPage() {
+  const { t, i18n } = useTranslation(['dashboard', 'common'])
+  const isAr = i18n.language === 'ar'
+  const locale = isAr ? 'ar-EG' : undefined
   const { businessId, loading: bizLoading } = useBusinessId()
   const [cursor, setCursor] = useState(() => startOfMonth(new Date()))
   const [selected, setSelected] = useState<string>(() =>
@@ -25,6 +29,10 @@ export default function CalendarPage() {
 
   const year = cursor.getFullYear()
   const month = cursor.getMonth()
+
+  const weekDays = isAr
+    ? ['أحد', 'إثن', 'ثلا', 'أرب', 'خمي', 'جمع', 'سبت']
+    : ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 
   const load = async () => {
     if (!businessId) {
@@ -64,7 +72,7 @@ export default function CalendarPage() {
 
   const cells = useMemo(() => {
     const first = startOfMonth(cursor)
-    const startPad = first.getDay() // 0 Sun
+    const startPad = first.getDay()
     const total = daysInMonth(cursor)
     const items: { date: string | null; day: number | null }[] = []
     for (let i = 0; i < startPad; i++) items.push({ date: null, day: null })
@@ -80,10 +88,15 @@ export default function CalendarPage() {
   const prevMonth = () => setCursor(new Date(year, month - 1, 1))
   const nextMonth = () => setCursor(new Date(year, month + 1, 1))
 
-  const monthLabel = cursor.toLocaleDateString(undefined, {
+  const monthLabel = cursor.toLocaleDateString(locale, {
     month: 'long',
     year: 'numeric',
   })
+
+  const statusLabel = (s: string) => {
+    if (s === 'no_show') return t('noShow')
+    return t(s as any) || s
+  }
 
   if (bizLoading) {
     return (
@@ -95,32 +108,38 @@ export default function CalendarPage() {
 
   if (!businessId) {
     return (
-      <div className="text-center py-16 text-text-secondary">
-        No business linked.
-      </div>
+      <div className="text-center py-16 text-text-secondary">{t('noBusiness')}</div>
     )
   }
 
   return (
     <div className="space-y-6">
-      <h1 className="text-h1">Calendar</h1>
+      <h1 className="text-h1">{t('calendar')}</h1>
 
       <div className="grid gap-6 lg:grid-cols-3">
         <Card className="lg:col-span-2">
-          <CardHeader className="flex flex-row items-center justify-between">
-            <CardTitle>{monthLabel}</CardTitle>
+          <CardHeader className="flex flex-row items-center justify-between gap-2">
+            <CardTitle className="text-base sm:text-lg">{monthLabel}</CardTitle>
             <div className="flex gap-1">
               <Button variant="ghost" size="icon-sm" onClick={prevMonth}>
-                <ChevronLeft className="h-4 w-4" />
+                {isAr ? (
+                  <ChevronRight className="h-4 w-4" />
+                ) : (
+                  <ChevronLeft className="h-4 w-4" />
+                )}
               </Button>
               <Button variant="ghost" size="icon-sm" onClick={nextMonth}>
-                <ChevronRight className="h-4 w-4" />
+                {isAr ? (
+                  <ChevronLeft className="h-4 w-4" />
+                ) : (
+                  <ChevronRight className="h-4 w-4" />
+                )}
               </Button>
             </div>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-7 gap-1 text-center text-xs text-text-muted mb-2">
-              {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((d) => (
+              {weekDays.map((d) => (
                 <div key={d} className="py-1 font-medium">
                   {d}
                 </div>
@@ -163,15 +182,15 @@ export default function CalendarPage() {
               })}
             </div>
             {loading && (
-              <p className="text-center text-caption mt-3">Loading…</p>
+              <p className="text-center text-caption mt-3">{t('common:loading')}</p>
             )}
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader>
-            <CardTitle>
-              {new Date(selected + 'T12:00:00').toLocaleDateString(undefined, {
+            <CardTitle className="text-base">
+              {new Date(selected + 'T12:00:00').toLocaleDateString(locale, {
                 weekday: 'short',
                 month: 'short',
                 day: 'numeric',
@@ -181,38 +200,44 @@ export default function CalendarPage() {
           <CardContent className="space-y-3 max-h-96 overflow-y-auto">
             {dayBookings.length === 0 ? (
               <p className="text-body-sm text-text-muted text-center py-6">
-                No bookings
+                {t('noBookingsYet')}
               </p>
             ) : (
               dayBookings
                 .sort((a, b) => a.startTime.localeCompare(b.startTime))
-                .map((b) => (
-                  <div
-                    key={b._id}
-                    className="rounded-md border border-border p-3"
-                  >
-                    <div className="flex justify-between gap-2">
-                      <p className="font-medium text-sm">{b.customerName}</p>
-                      <Badge
-                        variant={
-                          b.status === 'confirmed'
-                            ? 'success'
-                            : b.status === 'cancelled'
-                              ? 'error'
-                              : 'muted'
-                        }
-                      >
-                        {b.status}
-                      </Badge>
+                .map((b) => {
+                  const serviceName =
+                    typeof b.serviceId === 'object' && b.serviceId
+                      ? isAr && b.serviceId.nameAr
+                        ? b.serviceId.nameAr
+                        : b.serviceId.name
+                      : ''
+                  return (
+                    <div
+                      key={b._id}
+                      className="rounded-md border border-border p-3"
+                    >
+                      <div className="flex justify-between gap-2">
+                        <p className="font-medium text-sm">{b.customerName}</p>
+                        <Badge
+                          variant={
+                            b.status === 'confirmed'
+                              ? 'success'
+                              : b.status === 'cancelled'
+                                ? 'error'
+                                : 'muted'
+                          }
+                        >
+                          {statusLabel(b.status)}
+                        </Badge>
+                      </div>
+                      <p className="text-xs text-text-muted mt-1">
+                        {b.startTime} – {b.endTime}
+                        {serviceName ? ` · ${serviceName}` : ''}
+                      </p>
                     </div>
-                    <p className="text-xs text-text-muted mt-1">
-                      {b.startTime} – {b.endTime}
-                      {typeof b.serviceId === 'object' && b.serviceId?.name
-                        ? ` · ${b.serviceId.name}`
-                        : ''}
-                    </p>
-                  </div>
-                ))
+                  )
+                })
             )}
           </CardContent>
         </Card>

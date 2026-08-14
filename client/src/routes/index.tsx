@@ -5,6 +5,7 @@ import { PublicLayout } from '@/layouts/PublicLayout'
 import LoginPage from '@/pages/auth/LoginPage'
 import RegisterPage from '@/pages/auth/RegisterPage'
 import ForgotPasswordPage from '@/pages/auth/ForgotPasswordPage'
+import ResetPasswordPage from '@/pages/auth/ResetPasswordPage'
 import OverviewPage from '@/pages/dashboard/OverviewPage'
 import MyBookingsPage from '@/pages/dashboard/MyBookingsPage'
 import SettingsPage from '@/pages/dashboard/SettingsPage'
@@ -15,21 +16,13 @@ import CalendarPage from '@/pages/dashboard/CalendarPage'
 import CustomersPage from '@/pages/dashboard/CustomersPage'
 import CreateBusinessPage from '@/pages/dashboard/CreateBusinessPage'
 import CreateBookingPage from '@/pages/dashboard/CreateBookingPage'
+import AnalyticsPage from '@/pages/dashboard/AnalyticsPage'
 import HomePage from '@/pages/public/HomePage'
 import ServicesPage from '@/pages/public/ServicesPage'
 import StaffPage from '@/pages/public/StaffPage'
 import AboutPage from '@/pages/public/AboutPage'
 import ContactPage from '@/pages/public/ContactPage'
 import BookingPage from '@/pages/public/BookingPage'
-
-function Placeholder({ title }: { title: string }) {
-  return (
-    <div className="py-12 text-center">
-      <h1 className="text-h2 mb-2">{title}</h1>
-      <p className="text-text-secondary">Coming soon.</p>
-    </div>
-  )
-}
 
 export function AppRoutes() {
   return (
@@ -46,6 +39,7 @@ export function AppRoutes() {
       <Route path="/auth/login" element={<LoginPage />} />
       <Route path="/auth/register" element={<RegisterPage />} />
       <Route path="/auth/forgot-password" element={<ForgotPasswordPage />} />
+      <Route path="/auth/reset-password" element={<ResetPasswordPage />} />
 
       <Route
         path="/dashboard"
@@ -64,7 +58,7 @@ export function AppRoutes() {
         <Route path="staff" element={<StaffManagePage />} />
         <Route path="customers" element={<CustomersPage />} />
         <Route path="create-business" element={<CreateBusinessPage />} />
-        <Route path="analytics" element={<Placeholder title="Analytics" />} />
+        <Route path="analytics" element={<AnalyticsPage />} />
         <Route path="settings" element={<SettingsPage />} />
       </Route>
 

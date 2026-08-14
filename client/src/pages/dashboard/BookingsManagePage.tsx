@@ -7,6 +7,7 @@ import { Card, CardContent } from '@/components/ui/Card'
 import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
+import { cn } from '@/lib/utils'
 
 const STATUSES: (BookingStatus | 'all')[] = [
   'all',
@@ -18,12 +19,19 @@ const STATUSES: (BookingStatus | 'all')[] = [
 ]
 
 export default function BookingsManagePage() {
-  const { t } = useTranslation(['dashboard', 'common'])
+  const { t, i18n } = useTranslation(['dashboard', 'common'])
+  const isAr = i18n.language === 'ar'
   const { businessId, loading: bizLoading } = useBusinessId()
   const [bookings, setBookings] = useState<Booking[]>([])
   const [loading, setLoading] = useState(true)
   const [status, setStatus] = useState<BookingStatus | 'all'>('all')
   const [search, setSearch] = useState('')
+
+  const statusLabel = (s: string) => {
+    if (s === 'all') return t('all', { defaultValue: isAr ? 'الكل' : 'All' })
+    if (s === 'no_show') return t('noShow')
+    return t(s as any) || s
+  }
 
   const load = async () => {
     if (!businessId) {
@@ -50,12 +58,13 @@ export default function BookingsManagePage() {
   }, [businessId, bizLoading, status])
 
   const cancel = async (id: string) => {
-    if (!businessId || !confirm('Cancel this booking?')) return
+    if (!businessId || !confirm(t('confirmCancel', { defaultValue: 'Cancel this booking?' })))
+      return
     try {
       await bookingApi.cancel(businessId, id, 'Cancelled by admin')
       await load()
     } catch {
-      alert('Failed to cancel')
+      alert(t('failedCancel'))
     }
   }
 
@@ -65,7 +74,7 @@ export default function BookingsManagePage() {
       await bookingApi.updateStatus(businessId, id, 'completed')
       await load()
     } catch {
-      alert('Failed to update')
+      alert(t('failedUpdate'))
     }
   }
 
@@ -79,44 +88,48 @@ export default function BookingsManagePage() {
 
   if (!businessId) {
     return (
-      <div className="text-center py-16 text-text-secondary">
-        {t("dashboard:noBusiness")}
-      </div>
+      <div className="text-center py-16 text-text-secondary">{t('noBusiness')}</div>
     )
   }
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between gap-3">
-        <h1 className="text-h1">{t("dashboard:bookings")}</h1>
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <h1 className="text-h1">{t('bookings')}</h1>
         <Link to="/dashboard/bookings/new">
-          <Button>{t("dashboard:newBooking")}</Button>
+          <Button className="w-full sm:w-auto">{t('newBooking')}</Button>
         </Link>
       </div>
 
-      <div className="flex flex-col sm:flex-row gap-3">
-        <Input
-          placeholder={t("dashboard:searchBookings")}
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="sm:max-w-xs"
-        />
-        <Button variant="outline" onClick={load}>
-          Search
-        </Button>
-        <div className="flex flex-wrap gap-1">
+      <div className="flex flex-col gap-3">
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+          <Input
+            placeholder={t('searchBookings')}
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="sm:max-w-xs"
+            onKeyDown={(e) => e.key === 'Enter' && load()}
+          />
+          <Button variant="outline" onClick={load}>
+            {t('search')}
+          </Button>
+        </div>
+
+        {/* Status filters — styled chips */}
+        <div className="flex flex-wrap gap-2">
           {STATUSES.map((s) => (
             <button
               key={s}
               type="button"
               onClick={() => setStatus(s)}
-              className={`rounded-full px-3 py-1 text-xs font-medium transition-colors ${
+              className={cn(
+                'rounded-full border px-3.5 py-1.5 text-xs font-medium transition-all',
                 status === s
-                  ? 'bg-primary text-white'
-                  : 'bg-surface-muted text-text-secondary'
-              }`}
+                  ? 'border-primary bg-primary text-white shadow-sm'
+                  : 'border-border bg-surface text-text-secondary hover:border-primary/40 hover:text-primary'
+              )}
             >
-              {s}
+              {statusLabel(s)}
             </button>
           ))}
         </div>
@@ -125,39 +138,44 @@ export default function BookingsManagePage() {
       <Card>
         <CardContent className="pt-4">
           {bookings.length === 0 ? (
-            <p className="text-center py-10 text-text-muted">{t("dashboard:noData")}</p>
+            <p className="text-center py-10 text-text-muted">{t('noData')}</p>
           ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
+            <div className="overflow-x-auto -mx-1 px-1">
+              <table className="w-full min-w-[720px] text-sm">
                 <thead>
                   <tr className="border-b border-border text-text-muted">
-                    <th className="pb-3 font-medium text-start">{t("dashboard:customer")}</th>
-                    <th className="pb-3 font-medium text-start">{t("dashboard:service")}</th>
-                    <th className="pb-3 font-medium text-start">{t("dashboard:date")}</th>
-                    <th className="pb-3 font-medium text-start">{t("dashboard:time")}</th>
-                    <th className="pb-3 font-medium text-start">{t("dashboard:status")}</th>
-                    <th className="pb-3 font-medium text-end">{t("dashboard:actions")}</th>
+                    <th className="pb-3 font-medium text-start">{t('customer')}</th>
+                    <th className="pb-3 font-medium text-start">{t('service')}</th>
+                    <th className="pb-3 font-medium text-start">{t('date')}</th>
+                    <th className="pb-3 font-medium text-start">{t('time')}</th>
+                    <th className="pb-3 font-medium text-start">{t('status')}</th>
+                    <th className="pb-3 font-medium text-start">{t('payment')}</th>
+                    <th className="pb-3 font-medium text-end">{t('actions')}</th>
                   </tr>
                 </thead>
                 <tbody>
                   {bookings.map((b) => {
                     const serviceName =
-                      typeof b.serviceId === 'object' ? b.serviceId?.name : '—'
-                    const dateStr = new Date(b.date).toLocaleDateString()
+                      typeof b.serviceId === 'object' && b.serviceId
+                        ? isAr && b.serviceId.nameAr
+                          ? b.serviceId.nameAr
+                          : b.serviceId.name
+                        : '—'
+                    const dateStr = new Date(b.date).toLocaleDateString(
+                      isAr ? 'ar-EG' : undefined
+                    )
                     return (
                       <tr key={b._id} className="border-b border-border-subtle">
-                        <td className="py-3">
+                        <td className="py-3 pe-2">
                           <p className="font-medium">{b.customerName}</p>
-                          <p className="text-xs text-text-muted">
-                            {b.customerEmail}
-                          </p>
+                          <p className="text-xs text-text-muted">{b.customerEmail}</p>
                         </td>
-                        <td className="py-3">{serviceName}</td>
-                        <td className="py-3">{dateStr}</td>
-                        <td className="py-3">
+                        <td className="py-3 pe-2">{serviceName}</td>
+                        <td className="py-3 pe-2 whitespace-nowrap">{dateStr}</td>
+                        <td className="py-3 pe-2 whitespace-nowrap">
                           {b.startTime}–{b.endTime}
                         </td>
-                        <td className="py-3">
+                        <td className="py-3 pe-2">
                           <Badge
                             variant={
                               b.status === 'confirmed'
@@ -169,18 +187,59 @@ export default function BookingsManagePage() {
                                     : 'muted'
                             }
                           >
-                            {b.status}
+                            {statusLabel(b.status)}
                           </Badge>
                         </td>
+                        <td className="py-3 pe-2">
+                          <div className="space-y-0.5">
+                            <Badge
+                              variant={
+                                b.paymentStatus === 'paid' ? 'success' : 'warning'
+                              }
+                            >
+                              {b.paymentStatus === 'paid'
+                                ? t('paid')
+                                : b.paymentStatus || '—'}
+                            </Badge>
+                            {b.paymentMethod && (
+                              <p className="text-xs text-text-muted">
+                                {b.paymentMethod === 'vodafone_cash'
+                                  ? t('vodafoneCash', {
+                                      defaultValue: isAr
+                                        ? 'فودافون كاش'
+                                        : 'Vodafone Cash',
+                                    })
+                                  : b.paymentMethod === 'visa'
+                                    ? 'Visa'
+                                    : b.paymentMethod}
+                              </p>
+                            )}
+                            {b.price != null && (
+                              <p className="text-xs font-medium">
+                                {b.price} {b.currency || 'EGP'}
+                              </p>
+                            )}
+                          </div>
+                        </td>
                         <td className="py-3 text-end">
-                          <div className="flex justify-end gap-1">
+                          <div className="flex flex-wrap justify-end gap-1">
                             {['confirmed', 'pending'].includes(b.status) && (
                               <>
-                                <Button size="sm" variant="soft" onClick={() => complete(b._id)}>
-                                  Complete
+                                <Button
+                                  size="sm"
+                                  variant="soft"
+                                  onClick={() => complete(b._id)}
+                                >
+                                  {t('complete', {
+                                    defaultValue: isAr ? 'إكمال' : 'Complete',
+                                  })}
                                 </Button>
-                                <Button size="sm" variant="ghost" onClick={() => cancel(b._id)}>
-                                  Cancel
+                                <Button
+                                  size="sm"
+                                  variant="ghost"
+                                  onClick={() => cancel(b._id)}
+                                >
+                                  {t('common:cancel')}
                                 </Button>
                               </>
                             )}

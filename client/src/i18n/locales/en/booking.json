@@ -17,5 +17,17 @@
   "customerPhone": "Phone",
   "notes": "Notes",
   "noSlots": "No available times for this day",
-  "followSteps": "Follow the steps to complete your booking"
+  "followSteps": "Follow the steps to complete your booking",
+  "payment": "Payment",
+  "payWith": "Choose payment method",
+  "visa": "Visa / Mastercard",
+  "vodafoneCash": "Vodafone Cash",
+  "cash": "Pay at clinic",
+  "cardNumber": "Card number",
+  "cardExpiry": "Expiry (MM/YY)",
+  "cardCvv": "CVV",
+  "vfWallet": "Vodafone Cash number",
+  "payNow": "Pay & confirm",
+  "paymentSuccess": "Payment successful",
+  "demoPayNote": "Demo mode — no real charge. Booking is saved as paid."
 }

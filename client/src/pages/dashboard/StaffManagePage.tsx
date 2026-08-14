@@ -10,7 +10,8 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card'
 import { Badge } from '@/components/ui/Badge'
 import { Plus, Pencil, Trash2, X, User } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
-import i18n from '@/i18n/config'
+import { ImageField } from '@/components/shared/ImageField'
+import { resolveMediaUrl } from '@/services/upload.api'
 
 const schema = z.object({
   firstName: z.string().min(1),
@@ -19,30 +20,35 @@ const schema = z.object({
   phone: z.string().optional(),
   title: z.string().optional(),
   titleAr: z.string().optional(),
+  bio: z.string().optional(),
+  bioAr: z.string().optional(),
+  avatar: z.string().optional(),
   status: z.enum(['active', 'inactive', 'on_leave']).optional(),
 })
 
 type FormData = z.infer<typeof schema>
 
 export default function StaffManagePage() {
-  const { t } = useTranslation(['dashboard', 'common'])
+  const { t, i18n } = useTranslation(['dashboard', 'common'])
   const { businessId, loading: bizLoading } = useBusinessId()
   const [staff, setStaff] = useState<StaffMember[]>([])
   const [loading, setLoading] = useState(true)
   const [modalOpen, setModalOpen] = useState(false)
   const [editing, setEditing] = useState<StaffMember | null>(null)
   const [error, setError] = useState('')
-   const isAr = i18n.language === "ar";
 
   const {
     register,
     handleSubmit,
     reset,
+    setValue,
+    watch,
     formState: { errors, isSubmitting },
   } = useForm<FormData>({
     resolver: zodResolver(schema),
-    defaultValues: { status: 'active' },
+    defaultValues: { status: 'active', avatar: '' },
   })
+  const avatarValue = watch('avatar')
 
   const load = async () => {
     if (!businessId) {
@@ -66,7 +72,7 @@ export default function StaffManagePage() {
 
   const openCreate = () => {
     setEditing(null)
-    reset({ firstName: '', lastName: '', email: '', phone: '', title: '',titleAr: '', status: 'active' })
+    reset({ firstName: '', lastName: '', email: '', phone: '', title: '', titleAr: '', bio: '', bioAr: '', avatar: '', status: 'active' })
     setModalOpen(true)
   }
 
@@ -79,6 +85,9 @@ export default function StaffManagePage() {
       phone: s.phone || '',
       title: s.title || '',
       titleAr: s.titleAr || '',
+      bio: s.bio || '',
+      bioAr: s.bioAr || '',
+      avatar: s.avatar || '',
       status: s.status,
     })
     setModalOpen(true)
@@ -110,7 +119,7 @@ export default function StaffManagePage() {
       await businessApi.deleteStaff(businessId, id)
       await load()
     } catch {
-      alert('Failed to delete')
+      alert(t('dashboard:failedDelete'))
     }
   }
 
@@ -151,15 +160,19 @@ export default function StaffManagePage() {
             <Card key={s._id}>
               <CardContent className="pt-5">
                 <div className="flex items-start gap-3">
-                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-primary-50 text-primary">
-                    <User className="h-6 w-6" />
+                  <div className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-full bg-primary-50 text-primary">
+                    {s.avatar ? (
+                      <img src={resolveMediaUrl(s.avatar)} alt="" className="h-full w-full object-cover" />
+                    ) : (
+                      <User className="h-6 w-6" />
+                    )}
                   </div>
                   <div className="min-w-0 flex-1">
                     <p className="font-medium truncate">
                       {s.firstName} {s.lastName}
                     </p>
                     <p className="text-body-sm text-text-muted">
-                      { isAr? s.titleAr : s.title } 
+                      {(i18n.language === 'ar' && s.titleAr ? s.titleAr : s.title) || '—'}
                     </p>
                     <Badge
                       className="mt-2"
@@ -184,32 +197,43 @@ export default function StaffManagePage() {
       </div>
 
       {modalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40">
-          <Card className="relative w-full max-w-lg">
-            <button className="absolute top-4 end-4 p-1" onClick={() => setModalOpen(false)}>
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/40">
+          <Card className="relative w-full sm:max-w-lg max-h-[92vh] sm:max-h-[90vh] flex flex-col rounded-b-none sm:rounded-lg">
+            <button
+              type="button"
+              className="absolute top-3 end-3 z-10 p-1.5 rounded-md hover:bg-surface-muted"
+              onClick={() => setModalOpen(false)}
+            >
               <X className="h-5 w-5" />
             </button>
-            <CardHeader>
+            <CardHeader className="shrink-0 pe-12">
               <CardTitle>{editing ? t('dashboard:editStaff') : t('dashboard:addStaff')}</CardTitle>
             </CardHeader>
-            <CardContent>
-              <form onSubmit={handleSubmit(onSubmit)} className="space-y-3">
+            <CardContent className="overflow-y-auto flex-1">
+              <form onSubmit={handleSubmit(onSubmit)} className="space-y-3 pb-2">
                 {error && <p className="text-sm text-error">{error}</p>}
-                <div className="grid grid-cols-2 gap-3">
+                <ImageField
+                  label={t('dashboard:doctorPhoto', { defaultValue: i18n.language === 'ar' ? 'صورة الطبيب' : 'Doctor photo' })}
+                  value={avatarValue || ''}
+                  onChange={(url) => setValue('avatar', url)}
+                  round
+                />
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <Input label={t('common:firstName')} error={errors.firstName?.message} {...register('firstName')} />
                   <Input label={t('common:lastName')} error={errors.lastName?.message} {...register('lastName')} />
                 </div>
                 <Input label={t('common:email')} type="email" {...register('email')} />
                 <Input label={t('common:phone')} {...register('phone')} />
-                <Input label={t('common:title')} {...register('title')} />
-                <Input label={t('common:titleAr')} {...register('titleAr')} />
-
-                <div className="flex gap-2 pt-2">
-                  <Button type="button" variant="outline" onClick={() => setModalOpen(false)}>
-                    Cancel
+                <Input label={t('dashboard:title')} {...register('title')} />
+                <Input label={t('dashboard:titleAr')} {...register('titleAr')} />
+                <Input label={t('dashboard:bio')} {...register('bio')} />
+                <Input label={t('dashboard:bioAr')} {...register('bioAr')} />
+                <div className="flex flex-col-reverse sm:flex-row gap-2 pt-2 sticky bottom-0 bg-surface pb-1">
+                  <Button type="button" variant="outline" className="w-full sm:w-auto" onClick={() => setModalOpen(false)}>
+                    {t('common:cancel')}
                   </Button>
-                  <Button type="submit" isLoading={isSubmitting}>
-                    Save
+                  <Button type="submit" isLoading={isSubmitting} className="w-full sm:w-auto">
+                    {t('common:save')}
                   </Button>
                 </div>
               </form>
