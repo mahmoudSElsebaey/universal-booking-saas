@@ -3,6 +3,8 @@ import cors from 'cors'
 import helmet from 'helmet'
 import morgan from 'morgan'
 import cookieParser from 'cookie-parser'
+import mongoose from 'mongoose'
+
 import { env } from './config/env.js'
 import { errorMiddleware } from './middlewares/errorMiddleware.js'
 import { apiLimiter, authLimiter } from './middlewares/rateLimit.js'
@@ -92,6 +94,29 @@ app.get('/api/v1/health', (_req, res) => {
     timestamp: new Date().toISOString(),
     env: env.nodeEnv,
   })
+})
+
+// Temporary MongoDB connection test
+app.get('/api/v1/db-test', async (_req, res) => {
+  try {
+    const ping = await mongoose.connection.db?.command({
+      ping: 1,
+    })
+
+    res.json({
+      success: true,
+      readyState: mongoose.connection.readyState,
+      database: mongoose.connection.name,
+      ping,
+    })
+  } catch (error) {
+    console.error('[db-test]', error)
+
+    res.status(500).json({
+      success: false,
+      message: error instanceof Error ? error.message : String(error),
+    })
+  }
 })
 
 // API Routes
