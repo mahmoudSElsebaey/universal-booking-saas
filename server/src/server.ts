@@ -6,16 +6,25 @@ async function bootstrap() {
   try {
     mongoose.set('strictQuery', true)
 
-    await mongoose.connect(env.mongodbUri)
+    console.log('[DB TEST] Starting MongoDB connection...')
+    console.log('[DB TEST] URI exists:', Boolean(env.mongodbUri))
+    console.log('[DB TEST] URI prefix:', env.mongodbUri.substring(0, 25))
 
-    console.log('[db] Connected to MongoDB')
-    console.log(`[server] Starting on port ${env.port} (${env.nodeEnv})`)
+    await mongoose.connect(env.mongodbUri, {
+      serverSelectionTimeoutMS: 10000,
+      connectTimeoutMS: 10000,
+    })
+
+    console.log('[DB TEST] MongoDB CONNECTED')
+    console.log('[DB TEST] ReadyState:', mongoose.connection.readyState)
 
     app.listen(env.port, () => {
       console.log(`[server] Listening on port ${env.port} (${env.nodeEnv})`)
     })
-  } catch (err) {
-    console.error('[db] Connection failed:', err)
+  } catch (error) {
+    console.error('[DB TEST] MongoDB CONNECTION FAILED')
+    console.error(error)
+
     process.exit(1)
   }
 }
