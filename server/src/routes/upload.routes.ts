@@ -4,7 +4,10 @@ import { Readable } from 'stream'
 import fs from 'fs'
 import path from 'path'
 import { authMiddleware } from '../middlewares/authMiddleware.js'
-import { uploadImage, uploadsDir } from '../middlewares/uploadMiddleware.js'
+import {
+  uploadImage,
+  uploadsDir,
+} from '../middlewares/uploadMiddleware.js'
 import { asyncHandler } from '../middlewares/asyncHandler.js'
 import { ApiError } from '../utils/ApiError.js'
 import { cloudinary, hasCloudinary } from '../config/cloudinary.js'
@@ -22,6 +25,7 @@ router.post(
       throw new ApiError(400, 'No file uploaded')
     }
 
+    // Production / Vercel → Cloudinary
     if (hasCloudinary()) {
       const result = await new Promise<{
         secure_url: string
@@ -40,6 +44,7 @@ router.post(
               reject(err || new Error('Cloudinary upload failed'))
               return
             }
+
             resolve({
               secure_url: uploaded.secure_url!,
               public_id: uploaded.public_id!,
@@ -48,6 +53,7 @@ router.post(
             })
           }
         )
+
         Readable.from(req.file!.buffer).pipe(stream)
       })
 
@@ -63,6 +69,7 @@ router.post(
       })
     }
 
+    // Production without Cloudinary configuration
     if (env.isProd) {
       throw new ApiError(
         503,
@@ -70,14 +77,23 @@ router.post(
       )
     }
 
+    // Local Development → uploads/ folder
     const safe = req.file.originalname
       .toLowerCase()
       .replace(/[^a-z0-9._-]/g, '-')
       .replace(/-+/g, '-')
-    const filename = `${Date.now()}-${safe}`
-    fs.writeFileSync(path.join(uploadsDir, filename), req.file.buffer)
 
-    res.status(201).json({
+    const filename = `${Date.now()}-${safe}`
+    const filePath = path.join(uploadsDir, filename)
+
+    // Make sure the local uploads directory exists
+    if (!fs.existsSync(uploadsDir)) {
+      fs.mkdirSync(uploadsDir, { recursive: true })
+    }
+
+    fs.writeFileSync(filePath, req.file.buffer)
+
+    return res.status(201).json({
       success: true,
       message: 'Image uploaded (local dev)',
       data: {
