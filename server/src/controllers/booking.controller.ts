@@ -2,6 +2,7 @@ import type { Request, Response } from 'express'
 import { bookingService } from '../services/booking.service.js'
 import { availabilityService } from '../services/availability.service.js'
 import { asyncHandler } from '../middlewares/asyncHandler.js'
+import { param } from '../utils/params.js'
 
 export const getAvailability = asyncHandler(async (req: Request, res: Response) => {
   const { businessId, serviceId, staffId, date } = req.query as {
@@ -44,7 +45,7 @@ export const createBooking = asyncHandler(async (req: Request, res: Response) =>
 })
 
 export const listBookings = asyncHandler(async (req: Request, res: Response) => {
-  const businessId = req.params.businessId
+  const businessId = param(req.params.businessId)
   const result = await bookingService.list(businessId, {
     page: Number(req.query.page) || 1,
     limit: Number(req.query.limit) || 20,
@@ -66,16 +67,16 @@ export const listBookings = asyncHandler(async (req: Request, res: Response) => 
 
 export const getBooking = asyncHandler(async (req: Request, res: Response) => {
   const booking = await bookingService.getById(
-    req.params.id,
-    req.params.businessId
+    param(req.params.id),
+    param(req.params.businessId)
   )
   res.json({ success: true, data: booking })
 })
 
 export const updateBookingStatus = asyncHandler(async (req: Request, res: Response) => {
   const booking = await bookingService.updateStatus(
-    req.params.id,
-    req.params.businessId,
+    param(req.params.id),
+    param(req.params.businessId),
     req.body.status,
     {
       reason: req.body.reason,
@@ -91,8 +92,8 @@ export const updateBookingStatus = asyncHandler(async (req: Request, res: Respon
 
 export const cancelBooking = asyncHandler(async (req: Request, res: Response) => {
   const booking = await bookingService.cancel(
-    req.params.id,
-    req.params.businessId,
+    param(req.params.id),
+    param(req.params.businessId),
     req.body.reason,
     req.user?.userId
   )
@@ -105,8 +106,8 @@ export const cancelBooking = asyncHandler(async (req: Request, res: Response) =>
 
 export const rescheduleBooking = asyncHandler(async (req: Request, res: Response) => {
   const booking = await bookingService.reschedule(
-    req.params.id,
-    req.params.businessId,
+    param(req.params.id),
+    param(req.params.businessId),
     req.body.date,
     req.body.startTime,
     req.body.staffId

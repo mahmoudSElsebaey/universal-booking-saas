@@ -4,6 +4,7 @@ import { categoryService } from '../services/category.service.js'
 import { serviceService } from '../services/service.service.js'
 import { staffService } from '../services/staff.service.js'
 import { asyncHandler } from '../middlewares/asyncHandler.js'
+import { param } from '../utils/params.js'
 
 // ─── Business ───────────────────────────────────────────────
 export const createBusiness = asyncHandler(async (req: Request, res: Response) => {
@@ -21,18 +22,18 @@ export const getMyBusinesses = asyncHandler(async (req: Request, res: Response) 
 })
 
 export const getBusiness = asyncHandler(async (req: Request, res: Response) => {
-  const business = await businessService.getById(req.params.id)
+  const business = await businessService.getById(param(req.params.id))
   res.json({ success: true, data: business })
 })
 
 export const getBusinessBySlug = asyncHandler(async (req: Request, res: Response) => {
-  const business = await businessService.getBySlug(req.params.slug)
+  const business = await businessService.getBySlug(param(req.params.slug))
   res.json({ success: true, data: business })
 })
 
 export const updateBusiness = asyncHandler(async (req: Request, res: Response) => {
   const business = await businessService.update(
-    req.params.id,
+    param(req.params.id),
     req.user!.userId,
     req.body
   )
@@ -46,7 +47,7 @@ export const updateBusiness = asyncHandler(async (req: Request, res: Response) =
 // ─── Categories ─────────────────────────────────────────────
 export const createCategory = asyncHandler(async (req: Request, res: Response) => {
   const category = await categoryService.create(
-    req.params.businessId,
+    param(req.params.businessId),
     req.user!.userId,
     req.body
   )
@@ -54,14 +55,14 @@ export const createCategory = asyncHandler(async (req: Request, res: Response) =
 })
 
 export const listCategories = asyncHandler(async (req: Request, res: Response) => {
-  const categories = await categoryService.list(req.params.businessId)
+  const categories = await categoryService.list(param(req.params.businessId))
   res.json({ success: true, data: categories })
 })
 
 export const updateCategory = asyncHandler(async (req: Request, res: Response) => {
   const category = await categoryService.update(
-    req.params.id,
-    req.params.businessId,
+    param(req.params.id),
+    param(req.params.businessId),
     req.user!.userId,
     req.body
   )
@@ -70,8 +71,8 @@ export const updateCategory = asyncHandler(async (req: Request, res: Response) =
 
 export const deleteCategory = asyncHandler(async (req: Request, res: Response) => {
   await categoryService.softDelete(
-    req.params.id,
-    req.params.businessId,
+    param(req.params.id),
+    param(req.params.businessId),
     req.user!.userId
   )
   res.json({ success: true, message: 'Category deleted' })
@@ -80,7 +81,7 @@ export const deleteCategory = asyncHandler(async (req: Request, res: Response) =
 // ─── Services ───────────────────────────────────────────────
 export const createService = asyncHandler(async (req: Request, res: Response) => {
   const service = await serviceService.create(
-    req.params.businessId,
+    param(req.params.businessId),
     req.user!.userId,
     req.body
   )
@@ -88,7 +89,7 @@ export const createService = asyncHandler(async (req: Request, res: Response) =>
 })
 
 export const listServices = asyncHandler(async (req: Request, res: Response) => {
-  const result = await serviceService.list(req.params.businessId, {
+  const result = await serviceService.list(param(req.params.businessId), {
     page: Number(req.query.page) || 1,
     limit: Number(req.query.limit) || 20,
     status: req.query.status as string,
@@ -100,16 +101,16 @@ export const listServices = asyncHandler(async (req: Request, res: Response) => 
 
 export const getService = asyncHandler(async (req: Request, res: Response) => {
   const service = await serviceService.getById(
-    req.params.id,
-    req.params.businessId
+    param(req.params.id),
+    param(req.params.businessId)
   )
   res.json({ success: true, data: service })
 })
 
 export const updateService = asyncHandler(async (req: Request, res: Response) => {
   const service = await serviceService.update(
-    req.params.id,
-    req.params.businessId,
+    param(req.params.id),
+    param(req.params.businessId),
     req.user!.userId,
     req.body
   )
@@ -118,8 +119,8 @@ export const updateService = asyncHandler(async (req: Request, res: Response) =>
 
 export const deleteService = asyncHandler(async (req: Request, res: Response) => {
   await serviceService.softDelete(
-    req.params.id,
-    req.params.businessId,
+    param(req.params.id),
+    param(req.params.businessId),
     req.user!.userId
   )
   res.json({ success: true, message: 'Service deleted' })
@@ -128,7 +129,7 @@ export const deleteService = asyncHandler(async (req: Request, res: Response) =>
 // ─── Staff ──────────────────────────────────────────────────
 export const createStaff = asyncHandler(async (req: Request, res: Response) => {
   const staff = await staffService.create(
-    req.params.businessId,
+    param(req.params.businessId),
     req.user!.userId,
     req.body
   )
@@ -136,7 +137,7 @@ export const createStaff = asyncHandler(async (req: Request, res: Response) => {
 })
 
 export const listStaff = asyncHandler(async (req: Request, res: Response) => {
-  const result = await staffService.list(req.params.businessId, {
+  const result = await staffService.list(param(req.params.businessId), {
     page: Number(req.query.page) || 1,
     limit: Number(req.query.limit) || 20,
     status: req.query.status as string,
@@ -146,14 +147,14 @@ export const listStaff = asyncHandler(async (req: Request, res: Response) => {
 })
 
 export const getStaff = asyncHandler(async (req: Request, res: Response) => {
-  const staff = await staffService.getById(req.params.id, req.params.businessId)
+  const staff = await staffService.getById(param(req.params.id), param(req.params.businessId))
   res.json({ success: true, data: staff })
 })
 
 export const updateStaff = asyncHandler(async (req: Request, res: Response) => {
   const staff = await staffService.update(
-    req.params.id,
-    req.params.businessId,
+    param(req.params.id),
+    param(req.params.businessId),
     req.user!.userId,
     req.body
   )
@@ -162,8 +163,8 @@ export const updateStaff = asyncHandler(async (req: Request, res: Response) => {
 
 export const deleteStaff = asyncHandler(async (req: Request, res: Response) => {
   await staffService.softDelete(
-    req.params.id,
-    req.params.businessId,
+    param(req.params.id),
+    param(req.params.businessId),
     req.user!.userId
   )
   res.json({ success: true, message: 'Staff deleted' })
@@ -171,15 +172,15 @@ export const deleteStaff = asyncHandler(async (req: Request, res: Response) => {
 
 export const getStaffForService = asyncHandler(async (req: Request, res: Response) => {
   const staff = await staffService.getAvailableForService(
-    req.params.businessId,
-    req.params.serviceId
+    param(req.params.businessId),
+    param(req.params.serviceId)
   )
   res.json({ success: true, data: staff })
 })
 
 // ─── Public catalog by slug ─────────────────────────────────
 export const getPublicCatalog = asyncHandler(async (req: Request, res: Response) => {
-  const business = await businessService.getBySlug(req.params.slug)
+  const business = await businessService.getBySlug(param(req.params.slug))
   const businessId = business._id
 
   // Direct queries — more reliable for public site than layered filters

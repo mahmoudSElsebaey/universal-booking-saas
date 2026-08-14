@@ -1,6 +1,7 @@
 import type { Request, Response } from 'express'
 import { notificationService } from '../services/notification.service.js'
 import { asyncHandler } from '../middlewares/asyncHandler.js'
+import { param } from '../utils/params.js'
 
 export const listNotifications = asyncHandler(async (req: Request, res: Response) => {
   const result = await notificationService.listForUser(req.user!.userId, {
@@ -18,7 +19,7 @@ export const listNotifications = asyncHandler(async (req: Request, res: Response
 
 export const markAsRead = asyncHandler(async (req: Request, res: Response) => {
   const notification = await notificationService.markAsRead(
-    req.params.id,
+    param(req.params.id),
     req.user!.userId
   )
   res.json({ success: true, data: notification })
