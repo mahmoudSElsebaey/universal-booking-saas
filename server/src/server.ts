@@ -1,11 +1,10 @@
-import mongoose from 'mongoose'
 import app from './app.js'
 import { env } from './config/env.js'
+import { connectDB } from './config/db.js'
 
 async function bootstrap() {
   try {
-    mongoose.set('strictQuery', true)
-    await mongoose.connect(env.mongodbUri)
+    await connectDB()
     console.log('[db] Connected to MongoDB')
 
     app.listen(env.port, () => {
