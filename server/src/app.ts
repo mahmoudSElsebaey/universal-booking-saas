@@ -3,8 +3,6 @@ import cors from 'cors'
 import helmet from 'helmet'
 import morgan from 'morgan'
 import cookieParser from 'cookie-parser'
-import mongoose from 'mongoose'
-
 import { env } from './config/env.js'
 import { errorMiddleware } from './middlewares/errorMiddleware.js'
 import { apiLimiter, authLimiter } from './middlewares/rateLimit.js'
@@ -15,6 +13,7 @@ import analyticsRoutes from './routes/analytics.routes.js'
 import notificationRoutes from './routes/notification.routes.js'
 import reviewRoutes from './routes/review.routes.js'
 import uploadRoutes from './routes/upload.routes.js'
+import { uploadsDir } from './middlewares/uploadMiddleware.js'
 
 const app = express()
 
@@ -29,20 +28,12 @@ app.use(
 /** Allowed browser origins for CORS (credentials-aware — never "*") */
 function buildAllowedOrigins(): string[] {
   const list = new Set<string>()
-
-  if (env.clientUrl) {
-    list.add(env.clientUrl.replace(/\/$/, ''))
-  }
-
-  for (const origin of env.corsOrigins) {
-    list.add(origin.replace(/\/$/, ''))
-  }
-
+  if (env.clientUrl) list.add(env.clientUrl.replace(/\/$/, ''))
+  for (const o of env.corsOrigins) list.add(o.replace(/\/$/, ''))
   if (!env.isProd) {
     list.add('http://localhost:5173')
     list.add('http://127.0.0.1:5173')
   }
-
   return [...list]
 }
 
@@ -51,15 +42,9 @@ const allowedOrigins = buildAllowedOrigins()
 app.use(
   cors({
     origin(origin, callback) {
-      // Non-browser requests / same-origin requests / health checks
-      if (!origin) {
-        return callback(null, true)
-      }
-
-      if (allowedOrigins.includes(origin)) {
-        return callback(null, true)
-      }
-
+      // Non-browser / same-origin / health checks
+      if (!origin) return callback(null, true)
+      if (allowedOrigins.includes(origin)) return callback(null, true)
       callback(null, false)
     },
     credentials: true,
@@ -73,20 +58,15 @@ app.use(express.urlencoded({ extended: true, limit: '2mb' }))
 app.use(cookieParser())
 app.use(morgan(env.isProd ? 'combined' : 'dev'))
 
-// File uploads use Multer memoryStorage.
-// Production uploads should be stored in Cloudinary.
-// No local filesystem uploads are used on Vercel.
+// Local uploads folder (dev fallback; production should use Cloudinary URLs)
+app.use('/uploads', express.static(uploadsDir))
 
 app.use('/api/', apiLimiter)
 
-// Health
+// Health (no secrets)
 app.get('/api/health', (_req, res) => {
-  res.json({
-    success: true,
-    message: 'API is running',
-  })
+  res.json({ success: true, message: 'API is running' })
 })
-
 app.get('/api/v1/health', (_req, res) => {
   res.json({
     success: true,
@@ -96,30 +76,6 @@ app.get('/api/v1/health', (_req, res) => {
   })
 })
 
-// Temporary MongoDB connection test
-app.get('/api/v1/db-test', async (_req, res) => {
-  try {
-    const ping = await mongoose.connection.db?.command({
-      ping: 1,
-    })
-
-    res.json({
-      success: true,
-      readyState: mongoose.connection.readyState,
-      database: mongoose.connection.name,
-      ping,
-    })
-  } catch (error) {
-    console.error('[db-test]', error)
-
-    res.status(500).json({
-      success: false,
-      message: error instanceof Error ? error.message : String(error),
-    })
-  }
-})
-
-// API Routes
 app.use('/api/v1/auth', authLimiter, authRoutes)
 app.use('/api/v1/businesses', businessRoutes)
 app.use('/api/v1/bookings', bookingRoutes)
@@ -128,7 +84,6 @@ app.use('/api/v1/notifications', notificationRoutes)
 app.use('/api/v1/reviews', reviewRoutes)
 app.use('/api/v1/uploads', uploadRoutes)
 
-// 404
 app.use((_req, res) => {
   res.status(404).json({
     success: false,
@@ -136,7 +91,6 @@ app.use((_req, res) => {
   })
 })
 
-// Error handler
 app.use(errorMiddleware)
 
 export default app
