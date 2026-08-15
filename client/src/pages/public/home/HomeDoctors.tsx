@@ -27,7 +27,7 @@ export function HomeDoctors({ doctors }: Props) {
         </div>
         {doctors.length === 0 ? (
           <p className="text-center text-text-muted">
-            {isAr ? 'شغّل الـ seed لعرض الأطباء' : 'Run seed to load doctors'}
+            {isAr ? 'لا توجد أطباء متاحين' : 'No doctors available'}
           </p>
         ) : (
           <Swiper
