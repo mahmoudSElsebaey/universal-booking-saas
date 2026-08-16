@@ -48,10 +48,8 @@ export class BookingService {
       throw new ApiError(400, 'Service does not belong to this business')
     }
 
-    // 3. Validate staff if required / provided
-    if (service.staffRequired && !staffId) {
-      throw new ApiError(400, 'Staff selection is required for this service')
-    }
+    // 3. Resolve staff — explicit selection or auto-assign "any available"
+    let resolvedStaffId = staffId || undefined
 
     if (staffId) {
       const staff = await Staff.findOne({
@@ -61,6 +59,63 @@ export class BookingService {
         status: 'active',
       })
       if (!staff) throw new ApiError(404, 'Staff not found')
+    } else if (service.staffRequired || business.settings?.requireStaffSelection) {
+      // Pick any active staff who can offer this service (same logic as availability)
+      const mongoose = await import('mongoose')
+      const sid = new mongoose.Types.ObjectId(serviceId)
+      let candidates = await Staff.find({
+        businessId,
+        isActive: true,
+        status: 'active',
+        $or: [
+          { serviceIds: sid },
+          { serviceIds: serviceId },
+          { serviceIds: { $size: 0 } },
+          { serviceIds: { $exists: false } },
+        ],
+      })
+      if (candidates.length === 0 && service.assignedStaffIds?.length) {
+        candidates = await Staff.find({
+          _id: { $in: service.assignedStaffIds },
+          businessId,
+          isActive: true,
+          status: 'active',
+        })
+      }
+      if (candidates.length === 0) {
+        candidates = await Staff.find({
+          businessId,
+          isActive: true,
+          status: 'active',
+        }).limit(10)
+      }
+      if (candidates.length === 0) {
+        throw new ApiError(400, 'NO_STAFF_AVAILABLE')
+      }
+
+      // Prefer a candidate without conflict at this slot
+      const startMinTmp = timeToMinutes(startTime)
+      const endMinTmp = startMinTmp + service.duration
+      const endTimeTmp = minutesToTime(endMinTmp)
+      let chosen: (typeof candidates)[0] | null = null
+      for (const c of candidates) {
+        const conflict = await availabilityService.hasConflict({
+          businessId,
+          staffId: c._id.toString(),
+          date,
+          startTime,
+          endTime: endTimeTmp,
+          bufferTime: service.bufferTime || 0,
+        })
+        if (!conflict) {
+          chosen = c
+          break
+        }
+      }
+      if (!chosen) {
+        throw new ApiError(409, 'SLOT_UNAVAILABLE')
+      }
+      resolvedStaffId = chosen._id.toString()
     }
 
     // 4. Calculate end time
@@ -71,7 +126,7 @@ export class BookingService {
     // 5. Final conflict check (backend is the authority)
     const conflict = await availabilityService.hasConflict({
       businessId,
-      staffId,
+      staffId: resolvedStaffId,
       date,
       startTime,
       endTime,
@@ -94,7 +149,7 @@ export class BookingService {
     const booking = await Booking.create({
       businessId,
       serviceId,
-      staffId: staffId || undefined,
+      staffId: resolvedStaffId || undefined,
       customerId: input.customerId || undefined,
       customerName: input.customerName,
       customerEmail: input.customerEmail,

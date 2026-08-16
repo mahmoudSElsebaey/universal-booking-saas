@@ -73,7 +73,7 @@ export function HomeReviews({ reviews, avgRating, onReviewAdded }: Props) {
       <div className="container-app">
         <div className="mb-10 text-center">
           <h2 className="text-h1 mb-2">
-            {isAr ? 'آراء المرضى' : 'Patient reviews'}
+            {isAr ? 'آراء عملائنا' : 'What our clients say'}
           </h2>
           {avgRating > 0 && (
             <p className="flex items-center justify-center gap-1 text-primary">
@@ -87,7 +87,7 @@ export function HomeReviews({ reviews, avgRating, onReviewAdded }: Props) {
           <p className="text-center text-text-muted mb-10">
             {isAr
               ? 'لا توجد مراجعات بعد — كن أول من يقيّم'
-              : 'No reviews yet — be the first to rate'}
+              : 'No reviews yet — be the first to share your experience'}
           </p>
         ) : (
           <div className="reviews-swiper mb-12 max-w-4xl mx-auto">
@@ -121,7 +121,7 @@ export function HomeReviews({ reviews, avgRating, onReviewAdded }: Props) {
                   slidesPerView: 1.55,
                 },
               }}
-              className="!pb-12"
+              className="pb-12!"
             >
               {reviews.map((r) => (
                 <SwiperSlide key={r._id}>

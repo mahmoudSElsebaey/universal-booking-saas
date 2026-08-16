@@ -12,7 +12,7 @@ import { businessApi, type Service, type StaffMember } from '@/services/business
 import { useBusinessId } from '@/hooks/useBusinessId'
 import { useAuth } from '@/store/authStore'
 import { catalogApi } from '@/services/catalog.api'
-import { Calendar, Check, ChevronLeft,User } from 'lucide-react'
+import { Calendar, Check, ChevronLeft, User } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 const STEPS = ['service', 'staff', 'date', 'time', 'details', 'payment', 'review'] as const
@@ -52,6 +52,29 @@ export default function BookingPage() {
   const [time, setTime] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState('')
+
+  const mapApiError = (msg?: string) => {
+    if (!msg) return t('common:errorGeneric')
+    const m = msg.toLowerCase()
+    if (
+      m.includes('staff selection is required') ||
+      m.includes('no_staff_available')
+    ) {
+      return isAr
+        ? 'لا يوجد طبيب متاح لهذا الموعد. جرّب وقتاً آخر أو اختر طبيباً محدداً.'
+        : 'No doctor is available for this slot. Try another time or pick a doctor.'
+    }
+    if (m.includes('slot_unavailable') || m.includes('no longer available')) {
+      return isAr
+        ? 'هذا الموعد لم يعد متاحاً. اختر وقتاً آخر.'
+        : 'This time slot is no longer available. Please choose another.'
+    }
+    if (m.includes('staff not found')) {
+      return isAr ? 'الطبيب غير موجود أو غير متاح.' : 'Doctor not found or unavailable.'
+    }
+    return msg
+  }
+
   const [success, setSuccess] = useState(false)
   const [paymentMethod, setPaymentMethod] = useState<'visa' | 'vodafone_cash' | 'cash'>('visa')
   const [cardNumber, setCardNumber] = useState('')
@@ -233,7 +256,7 @@ export default function BookingPage() {
       })
       setSuccess(true)
     } catch (err: any) {
-      setError(err?.response?.data?.message || t('common:errorGeneric'))
+      setError(mapApiError(err?.response?.data?.message))
     } finally {
       setSubmitting(false)
     }
@@ -301,8 +324,9 @@ export default function BookingPage() {
       </div>
 
       {error && (
-        <div className="mb-4 rounded-md bg-error-light px-3 py-2 text-sm text-error">
-          {error}
+        <div className="mb-4 flex items-start gap-2 rounded-xl border border-red-200 bg-red-50 px-3 py-3 text-sm text-red-800 shadow-sm">
+          <span className="mt-0.5 font-semibold">!</span>
+          <span>{error}</span>
         </div>
       )}
 

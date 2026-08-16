@@ -19,19 +19,23 @@ export function HomeHero() {
   return (
     <section className="relative">
       <Swiper
+        key={i18n.language}
         modules={[Autoplay, Pagination]}
         autoplay={{ delay: 4500, disableOnInteraction: false }}
         pagination={{ clickable: true }}
         loop
+        observer
+        observeParents
         className="h-105 md:h-130"
       >
         {HERO_IMAGES.map((src, i) => (
-          <SwiperSlide key={i}>
+          <SwiperSlide key={`${i18n.language}-${i}`}>
             <div className="relative h-full w-full">
               <img
                 src={src}
                 alt=""
                 className="h-full w-full object-cover"
+                loading={i === 0 ? 'eager' : 'lazy'}
                 fetchPriority={i === 0 ? 'high' : 'auto'}
               />
               <div className="absolute inset-0 bg-linear-to-t from-black/70 via-black/35 to-black/20" />
