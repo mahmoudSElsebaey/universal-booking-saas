@@ -8,10 +8,10 @@
     "build": "tsc",
     "start": "node dist/server.js",
     "seed": "tsx src/jobs/seed.ts",
-    "vercel-build": "echo \"Vercel serverless build: api/index.ts\""
+    "vercel-build": "echo \"ok\""
   },
   "engines": {
-    "node": "20.x"
+    "node": "24.x"
   },
   "dependencies": {
     "bcrypt": "^6.0.0",

@@ -1,14 +1,15 @@
 {
   "version": 2,
-  "buildCommand": "echo \"Vercel serverless - skip tsc\"",
-  "installCommand": "npm install",
-  "rewrites": [{ "source": "/(.*)", "destination": "/api" }],
-  "headers": [
+  "builds": [
     {
-      "source": "/api/(.*)",
-      "headers": [
-        { "key": "Access-Control-Allow-Credentials", "value": "true" }
-      ]
+      "src": "api/index.ts",
+      "use": "@vercel/node"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "api/index.ts"
     }
   ]
 }
