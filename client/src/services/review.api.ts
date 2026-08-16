@@ -47,7 +47,7 @@ export const reviewApi = {
     api
       .patch(`/reviews/business/${businessId}/${id}/publish`, { isPublished })
       .then((r) => r.data),
-,
+
 
   delete: (businessId: string, id: string) =>
     api
