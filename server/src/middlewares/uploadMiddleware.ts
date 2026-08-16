@@ -3,14 +3,22 @@ import path from 'path'
 import multer from 'multer'
 import { fileURLToPath } from 'url'
 import { ApiError } from '../utils/ApiError.js'
+import { env } from '../config/env.js'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 
-export const uploadsDir = path.resolve(__dirname, '../../uploads')
+/** Local uploads dir. On Vercel only /tmp is writable. */
+export const uploadsDir = env.isProd
+  ? path.join('/tmp', 'bookora-uploads')
+  : path.resolve(__dirname, '../../uploads')
 
-if (!fs.existsSync(uploadsDir)) {
-  fs.mkdirSync(uploadsDir, { recursive: true })
+try {
+  if (!fs.existsSync(uploadsDir)) {
+    fs.mkdirSync(uploadsDir, { recursive: true })
+  }
+} catch (err) {
+  console.warn('[upload] could not ensure uploads dir', err)
 }
 
 const memoryStorage = multer.memoryStorage()

@@ -5,30 +5,36 @@ dotenv.config()
 const nodeEnv = process.env.NODE_ENV || 'development'
 const isProd = nodeEnv === 'production'
 
-function requiredInProd(name: string, value: string | undefined, fallback?: string): string {
+/**
+ * Prefer real env values. In production, log missing keys instead of throwing
+ * at import-time (import throws crash the entire Vercel serverless function).
+ */
+function pick(name: string, fallback = ''): string {
+  const value = process.env[name]
   if (value && value.trim()) return value.trim()
   if (isProd) {
-    throw new Error(`[config] Missing required environment variable: ${name}`)
+    console.error(`[config] Missing environment variable: ${name}`)
   }
-  return fallback ?? ''
+  return fallback
 }
 
 const jwtAccess =
-  process.env.JWT_ACCESS_SECRET ||
+  process.env.JWT_ACCESS_SECRET?.trim() ||
   (isProd ? '' : 'dev-access-secret-change-me-min-32-chars!!')
 const jwtRefresh =
-  process.env.JWT_REFRESH_SECRET ||
+  process.env.JWT_REFRESH_SECRET?.trim() ||
   (isProd ? '' : 'dev-refresh-secret-change-me-min-32-chars!')
 
 if (isProd) {
-  if (!process.env.JWT_ACCESS_SECRET || !process.env.JWT_REFRESH_SECRET) {
-    throw new Error('[config] JWT_ACCESS_SECRET and JWT_REFRESH_SECRET are required in production')
-  }
-  if (!process.env.MONGODB_URI) {
-    throw new Error('[config] MONGODB_URI is required in production')
-  }
-  if (!process.env.CLIENT_URL) {
-    throw new Error('[config] CLIENT_URL is required in production')
+  const missing: string[] = []
+  if (!process.env.JWT_ACCESS_SECRET) missing.push('JWT_ACCESS_SECRET')
+  if (!process.env.JWT_REFRESH_SECRET) missing.push('JWT_REFRESH_SECRET')
+  if (!process.env.MONGODB_URI) missing.push('MONGODB_URI')
+  if (!process.env.CLIENT_URL) missing.push('CLIENT_URL')
+  if (missing.length) {
+    console.error(
+      `[config] Required production env missing: ${missing.join(', ')}`
+    )
   }
 }
 
@@ -36,18 +42,13 @@ export const env = {
   nodeEnv,
   isProd,
   port: Number(process.env.PORT) || 5000,
-  mongodbUri: requiredInProd(
+  mongodbUri: pick(
     'MONGODB_URI',
-    process.env.MONGODB_URI,
     'mongodb://localhost:27017/booking-system'
   ),
   jwtAccessSecret: jwtAccess,
   jwtRefreshSecret: jwtRefresh,
-  clientUrl: requiredInProd(
-    'CLIENT_URL',
-    process.env.CLIENT_URL,
-    'http://localhost:5173'
-  ),
+  clientUrl: pick('CLIENT_URL', 'http://localhost:5173'),
   corsOrigins: (process.env.CORS_ORIGINS || '')
     .split(',')
     .map((s) => s.trim())
@@ -73,4 +74,14 @@ export function hasCloudinary(): boolean {
     env.cloudinaryApiKey &&
     env.cloudinaryApiSecret
   )
+}
+
+export function assertProdConfig(): void {
+  if (!isProd) return
+  if (!env.mongodbUri || env.mongodbUri.includes('localhost')) {
+    throw new Error('MONGODB_URI is not configured for production')
+  }
+  if (!env.jwtAccessSecret || !env.jwtRefreshSecret) {
+    throw new Error('JWT secrets are not configured for production')
+  }
 }
