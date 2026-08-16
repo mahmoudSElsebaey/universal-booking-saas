@@ -111,6 +111,11 @@ export class ReviewService {
     if (!review) throw new ApiError(404, 'Review not found')
     return review
   }
+  async delete(reviewId: string, businessId: string) {
+    const review = await Review.findOneAndDelete({ _id: reviewId, businessId })
+    if (!review) throw new ApiError(404, 'Review not found')
+    return { deleted: true }
+  }
 }
 
 export const reviewService = new ReviewService()

@@ -4,6 +4,7 @@ import {
   listReviews,
   replyToReview,
   toggleReviewPublish,
+  deleteReview,
 } from '../controllers/review.controller.js'
 import { authMiddleware, requirePermission } from '../middlewares/authMiddleware.js'
 import { validate } from '../middlewares/validateMiddleware.js'
@@ -51,6 +52,13 @@ router.patch(
   requirePermission('settings:update'),
   validate(publishSchema),
   toggleReviewPublish
+)
+
+router.delete(
+  '/business/:businessId/:id',
+  authMiddleware,
+  requirePermission('settings:update'),
+  deleteReview
 )
 
 export default router

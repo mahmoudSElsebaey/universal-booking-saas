@@ -50,3 +50,9 @@ export const toggleReviewPublish = asyncHandler(async (req: Request, res: Respon
   )
   res.json({ success: true, data: review })
 })
+
+export const deleteReview = asyncHandler(async (req: Request, res: Response) => {
+  await reviewService.delete(param(req.params.id), param(req.params.businessId))
+  res.json({ success: true, message: 'Review deleted' })
+})
+

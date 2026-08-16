@@ -9,7 +9,8 @@ import { useState } from 'react'
 import { cn } from '@/lib/utils'
 
 export function PublicLayout() {
-  const { t } = useTranslation('common')
+  const { t, i18n } = useTranslation('common')
+  const isAr = i18n.language === 'ar'
   const { isAuthenticated, user } = useAuth()
   const [open, setOpen] = useState(false)
 
@@ -55,7 +56,7 @@ export function PublicLayout() {
             <LanguageSwitcher />
             {isAuthenticated ? (
               <>
-                <span className="max-w-[140px] truncate text-sm text-text-secondary">
+                <span className="max-w-35 truncate text-sm text-text-secondary">
                   {userLabel}
                 </span>
                 <Link to="/dashboard">
@@ -173,8 +174,21 @@ export function PublicLayout() {
             <p className="text-body-sm text-text-secondary">Cairo, Egypt</p>
           </div>
         </div>
-        <div className="container-app mt-8 pt-6 border-t border-border text-center text-caption text-text-muted">
-          © {new Date().getFullYear()} Bookora
+        <div className="container-app mt-8 pt-6 border-t border-border text-center text-caption text-text-muted space-y-1">
+          <p>© {new Date().getFullYear()} Bookora. {isAr ? 'جميع الحقوق محفوظة.' : 'All rights reserved.'}</p>
+          <p>
+            {isAr ? (
+              <>
+                صُمم وطُوّر بواسطة المهندس{' '}
+                <span className="font-medium text-text">Mahmoud Elsebaey</span>
+              </>
+            ) : (
+              <>
+                Designed & developed by Eng.{' '}
+                <span className="font-medium text-text">Mahmoud Elsebaey</span>
+              </>
+            )}
+          </p>
         </div>
       </footer>
     </div>

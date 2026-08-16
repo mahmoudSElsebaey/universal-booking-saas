@@ -16,7 +16,9 @@ import type { Review } from '@/services/review.api'
 import { reviewApi } from '@/services/review.api'
 import { useAuth } from '@/store/authStore'
 import { catalogApi } from '@/services/catalog.api'
-import { Star } from 'lucide-react'
+import { Star, Trash2 } from 'lucide-react'
+import { useToast } from '@/components/ui/Toast'
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
 
 type Props = {
   reviews: Review[]
@@ -34,6 +36,13 @@ export function HomeReviews({ reviews, avgRating, onReviewAdded }: Props) {
   const [submitting, setSubmitting] = useState(false)
   const [message, setMessage] = useState('')
   const [error, setError] = useState('')
+  const [deleteId, setDeleteId] = useState<string | null>(null)
+  const [deleting, setDeleting] = useState(false)
+  const { success, error: toastError } = useToast()
+  const canModerate =
+    !!user &&
+    ['super_admin', 'business_owner', 'manager'].includes(user.role)
+
 
   const submitReview = async () => {
     setError('')
@@ -68,6 +77,27 @@ export function HomeReviews({ reviews, avgRating, onReviewAdded }: Props) {
     }
   }
 
+  const confirmDelete = async () => {
+    if (!deleteId) return
+    setDeleting(true)
+    try {
+      let businessId = localStorage.getItem('businessId') || ''
+      if (!businessId) {
+        const c = await catalogApi.getCatalog()
+        businessId = c.business?._id || ''
+      }
+      if (!businessId) throw new Error('No business')
+      await reviewApi.delete(businessId, deleteId)
+      setDeleteId(null)
+      success(isAr ? 'تم حذف التقييم' : 'Review deleted')
+      onReviewAdded?.()
+    } catch (e: any) {
+      toastError(e?.response?.data?.message || t('errorGeneric'))
+    } finally {
+      setDeleting(false)
+    }
+  }
+
   return (
     <section className="border-t border-border bg-surface py-16 overflow-hidden">
       <div className="container-app">
@@ -92,12 +122,15 @@ export function HomeReviews({ reviews, avgRating, onReviewAdded }: Props) {
         ) : (
           <div className="reviews-swiper mb-12 max-w-4xl mx-auto">
             <Swiper
+              key={`${i18n.language}-${reviews.length}-${reviews.map((r) => r._id).join('-')}`}
               modules={[Autoplay, EffectCoverflow, Pagination]}
               effect="coverflow"
               grabCursor
               centeredSlides
               slidesPerView={1}
               spaceBetween={24}
+              observer
+              observeParents
               loop={reviews.length > 2}
               autoplay={{
                 delay: 4500,
@@ -124,15 +157,26 @@ export function HomeReviews({ reviews, avgRating, onReviewAdded }: Props) {
               className="pb-12!"
             >
               {reviews.map((r) => (
-                <SwiperSlide key={r._id}>
+                <SwiperSlide key={`${i18n.language}-${r._id}`}>
                   <Card className="review-card h-full border-border/80 shadow-sm">
-                    <CardContent className="pt-6 pb-6 px-6 sm:px-8">
+                    <CardContent className="pt-6 pb-6 px-6 sm:px-8 relative">
+                      {canModerate && (
+                        <button
+                          type="button"
+                          onClick={() => setDeleteId(r._id)}
+                          className="absolute top-4 inset-e-4 rounded-md p-1.5 text-text-muted hover:bg-red-50 hover:text-red-600 transition-colors"
+                          title={isAr ? 'حذف التقييم' : 'Delete review'}
+                          aria-label={isAr ? 'حذف التقييم' : 'Delete review'}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      )}
                       <div className="mb-3 flex gap-0.5 text-secondary">
                         {Array.from({ length: r.rating }).map((_, i) => (
                           <Star key={i} className="h-4 w-4 fill-current" />
                         ))}
                       </div>
-                      <p className="mb-4 text-body text-text-secondary leading-relaxed min-h-[4.5rem]">
+                      <p className="mb-4 text-body text-text-secondary leading-relaxed min-h-18">
                         {r.comment || '—'}
                       </p>
                       <p className="text-sm font-semibold text-text">
@@ -206,6 +250,18 @@ export function HomeReviews({ reviews, avgRating, onReviewAdded }: Props) {
           </CardContent>
         </Card>
       </div>
+      <ConfirmDialog
+        open={!!deleteId}
+        message={
+          isAr
+            ? 'هل أنت متأكد من حذف هذا التقييم؟'
+            : 'Are you sure you want to delete this review?'
+        }
+        onConfirm={confirmDelete}
+        onCancel={() => setDeleteId(null)}
+        loading={deleting}
+      />
     </section>
   )
 }
+
