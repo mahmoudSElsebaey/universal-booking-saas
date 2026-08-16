@@ -28,6 +28,7 @@ export function HomeDoctors({ doctors }: Props) {
         {doctors.length === 0 ? (
           <p className="text-center text-text-muted">
             {isAr ? 'لا توجد أطباء متاحين' : 'No doctors available'}
+            
           </p>
         ) : (
           <Swiper
