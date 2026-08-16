@@ -6,7 +6,6 @@ import { catalogApi } from '@/services/catalog.api'
 import type { StaffMember } from '@/services/business.api'
 import { Card, CardContent } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
-import { User } from 'lucide-react'
 
 const AVATARS = [
   'https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?w=400&q=80',

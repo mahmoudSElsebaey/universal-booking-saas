@@ -7,13 +7,12 @@ import { z } from 'zod'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { Card, CardContent } from '@/components/ui/Card'
-import { Badge } from '@/components/ui/Badge'
 import { bookingApi, type TimeSlot } from '@/services/booking.api'
 import { businessApi, type Service, type StaffMember } from '@/services/business.api'
 import { useBusinessId } from '@/hooks/useBusinessId'
 import { useAuth } from '@/store/authStore'
 import { catalogApi } from '@/services/catalog.api'
-import { Calendar, Check, ChevronLeft, ChevronRight, Clock, User } from 'lucide-react'
+import { Calendar, Check, ChevronLeft,User } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 const STEPS = ['service', 'staff', 'date', 'time', 'details', 'payment', 'review'] as const
@@ -34,7 +33,7 @@ export default function BookingPage() {
   const { t, i18n } = useTranslation(['booking', 'common'])
   const isAr = i18n.language === 'ar'
   const navigate = useNavigate()
-  const { user, isAuthenticated } = useAuth()
+  const { user } = useAuth()
 
   const { businessId: resolvedBizId } = useBusinessId()
   const [step, setStep] = useState<Step>('service')
