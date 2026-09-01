@@ -11,6 +11,13 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/com
 import { LanguageSwitcher } from '@/components/shared/LanguageSwitcher'
 import { Sparkles, Mail, Lock } from 'lucide-react'
 
+const DEMO = [
+  { role: 'Owner', email: 'owner@bookora.app', password: 'Password123' },
+  { role: 'Manager', email: 'manager@bookora.app', password: 'Password123' },
+  { role: 'Staff', email: 'staff@bookora.app', password: 'Password123' },
+  { role: 'Customer', email: 'customer@bookora.app', password: 'Password123' },
+]
+
 const loginSchema = z.object({
   email: z.string().email(),
   password: z.string().min(1),
@@ -27,9 +34,14 @@ export default function LoginPage() {
   const {
     register,
     handleSubmit,
+    setValue,
     formState: { errors, isSubmitting },
   } = useForm<LoginForm>({
     resolver: zodResolver(loginSchema),
+    defaultValues: {
+      email: 'owner@bookora.app',
+      password: 'Password123',
+    },
   })
 
   const onSubmit = async (data: LoginForm) => {
@@ -40,6 +52,12 @@ export default function LoginPage() {
     } catch (err: any) {
       setServerError(err?.response?.data?.message || t('common:errorGeneric'))
     }
+  }
+
+  const fillDemo = (acc: (typeof DEMO)[0]) => {
+    setValue('email', acc.email, { shouldValidate: true })
+    setValue('password', acc.password, { shouldValidate: true })
+    setServerError('')
   }
 
   return (
@@ -100,6 +118,29 @@ export default function LoginPage() {
                   {t('auth:signIn')}
                 </Button>
               </form>
+
+              {/* Demo / test accounts */}
+              <div className="mt-6 space-y-2">
+                <p className="text-xs font-semibold uppercase tracking-wider text-text-secondary">
+                  Test accounts
+                </p>
+                <p className="text-xs text-text-secondary opacity-80">
+                  Password for all: <span className="font-mono">Password123</span>
+                </p>
+                <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                  {DEMO.map((acc) => (
+                    <button
+                      key={acc.email}
+                      type="button"
+                      onClick={() => fillDemo(acc)}
+                      className="w-full rounded-lg border border-border bg-surface px-3 py-2.5 text-start text-sm transition hover:border-primary/40 hover:bg-primary/5"
+                    >
+                      <span className="font-medium text-primary">{acc.role}</span>
+                      <p className="mt-0.5 font-mono text-xs text-text-secondary">{acc.email}</p>
+                    </button>
+                  ))}
+                </div>
+              </div>
 
               <p className="mt-6 text-center text-body-sm text-text-secondary">
                 {t('auth:noAccount')}{' '}
